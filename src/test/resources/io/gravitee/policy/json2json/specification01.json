@@ -1,0 +1,17 @@
+[
+    {
+        "operation": "shift",
+        "spec": {
+            "_id": "id",
+            "*": {
+                "$": "&1"
+            }
+        }
+    },
+    {
+        "operation": "remove",
+        "spec": {
+            "__v": ""
+        }
+    }
+]

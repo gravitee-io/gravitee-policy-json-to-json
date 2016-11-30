@@ -1,0 +1,109 @@
+= JSON to JSON Transformation Policy
+
+https://github.com/gravitee-io/gravitee-policy-json-to-json[Source code],
+image:https://ci.gravitee.io/jenkins/buildStatus/icon?job=gravitee-policy-json-to-json["Build status", link="http://build.gravitee.io/jenkins/job/gravitee-policy-xml-json/"]
+
+== Scope
+
+[cols="2*", options="header"]
+|===
+^|onRequest
+^|onResponse
+
+^.^| X
+^.^| X
+
+|===
+
+== Description
+
+The JSON to JSON transformation policy lets you apply a transformation (or mapping) on the request and/or
+on the response content.
+
+This policy is based on the amazing https://github.com/bazaarvoice/jolt[JOLT] library.
+The only thing you have to do using Gravitee.io API Management is to write and provide the JOLT specification
+through the policy configuration.
+
+An example of JOLT transformation usage can be as follow:
+
+[source, json]
+.Input
+----
+{
+    "_id": "57762dc6ab7d620000000001",
+    "name": "name",
+    "__v": 0
+}
+----
+
+[source, json]
+.Specification
+----
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "_id": "id",
+      "*": {
+        "$": "&1"
+      }
+    }
+  },
+  {
+    "operation": "remove",
+    "spec": {
+      "__v": ""
+    }
+  }
+]
+----
+
+[source, json]
+.Output
+----
+{
+    "id": "57762dc6ab7d620000000001",
+    "name": "name"
+}
+----
+
+== Configuration
+
+You can configure the policy with the following options :
+
+|===
+|Property |Required |Description |Type| Default
+
+.^|scope
+^.^|X
+|The execution scope (`request` or `response`).
+^.^|string
+^.^|`REQUEST`
+
+.^|specification
+^.^|X
+|The http://jolt-demo.appspot.com/[JOLT] specification to apply on a given content.
+^.^|string
+^.^|
+
+|===
+
+
+[source, json]
+.Sample
+----
+"json-to-json": {
+    "scope": "REQUEST",
+    "specification": "[\n  {\n    \"operation\": \"shift\",\n    \"spec\": {\n      \"_id\": \"id\",\n      \"*\": {\n        \"$\": \"&1\"\n      }\n      \n    }\n  },\n  {\n    \"operation\": \"remove\",\n    \"spec\": {\n      \"__v\": \"\"\n    }\n  }\n]\n"
+}
+----
+
+== Http Status Code
+
+|===
+|Code |Message
+
+.^| ```500```
+| Bad specification file or transformation can not be executed properly.
+
+|===

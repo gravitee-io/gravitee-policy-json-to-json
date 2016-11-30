@@ -1,0 +1,31 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:gravitee:policy:json2json:configuration:JsonToJsonTransformationPolicyConfiguration",
+  "properties" : {
+    "scope" : {
+      "title": "Scope",
+      "description": "Execute policy on <strong>request</strong> or <strong>response</strong> phase.",
+      "type" : "string",
+      "default": "REQUEST",
+      "enum" : [ "REQUEST", "RESPONSE" ]
+    },
+    "specification" : {
+      "title": "JOLT specification",
+      "type" : "string",
+      "x-schema-form": {
+        "type": "codemirror",
+        "codemirrorOptions": {
+          "placeholder": "Place your JOLT specification here or drag'n'drop your JOLT specification file",
+          "lineWrapping": true,
+          "lineNumbers": true,
+          "allowDropFileTypes": true,
+          "autoCloseTags": true,
+          "mode": "javascript"
+        }
+      }
+    }
+  },
+  "required": [
+    "specification"
+  ]
+}
