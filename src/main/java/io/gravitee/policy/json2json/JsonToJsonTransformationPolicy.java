@@ -23,8 +23,7 @@ import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.stream.TransformableRequestStreamBuilder;
-import io.gravitee.gateway.api.http.stream.TransformableStreamBuilder;
-import io.gravitee.gateway.api.stream.BufferedReadWriteStream;
+import io.gravitee.gateway.api.http.stream.TransformableResponseStreamBuilder;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
 import io.gravitee.policy.api.annotations.OnRequestContent;
@@ -53,14 +52,14 @@ public class JsonToJsonTransformationPolicy {
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.RESPONSE) {
-            return TransformableStreamBuilder
+            return TransformableResponseStreamBuilder
                     .on(response)
                     .contentType(MediaType.APPLICATION_JSON)
                     .transform(map(executionContext))
                     .build();
-        } else {
-            return new BufferedReadWriteStream();
         }
+
+        return null;
     }
 
     @OnRequestContent
@@ -71,9 +70,9 @@ public class JsonToJsonTransformationPolicy {
                     .contentType(MediaType.APPLICATION_JSON)
                     .transform(map(executionContext))
                     .build();
-        } else {
-            return new BufferedReadWriteStream();
         }
+
+        return null;
     }
 
     Function<Buffer, Buffer> map(ExecutionContext executionContext) {
