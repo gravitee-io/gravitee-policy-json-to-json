@@ -22,7 +22,7 @@
 
     <groupId>io.gravitee.policy</groupId>
     <artifactId>gravitee-policy-json-to-json</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Gravitee IO - Policy - JSON to JSON Transformation</name>
     <description>Description of the JSON to JSON Transformation Gravitee Policy</description>
