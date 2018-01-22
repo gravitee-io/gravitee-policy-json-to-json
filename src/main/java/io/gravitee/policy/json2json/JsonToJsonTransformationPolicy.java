@@ -24,6 +24,7 @@ import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.stream.TransformableRequestStreamBuilder;
 import io.gravitee.gateway.api.http.stream.TransformableResponseStreamBuilder;
+import io.gravitee.gateway.api.http.stream.TransformableStreamBuilder;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
 import io.gravitee.policy.api.annotations.OnRequestContent;
@@ -52,11 +53,16 @@ public class JsonToJsonTransformationPolicy {
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.RESPONSE) {
-            return TransformableResponseStreamBuilder
+            TransformableStreamBuilder streamBuilder = TransformableResponseStreamBuilder
                     .on(response)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .transform(map(executionContext))
-                    .build();
+                    .transform(map(executionContext));
+
+            // If there is no `content-type` header then define it as `application/json`.
+            if(response.headers().contentType() == null) {
+                streamBuilder.contentType(MediaType.APPLICATION_JSON);
+            }
+
+            return streamBuilder.build();
         }
 
         return null;
@@ -65,11 +71,16 @@ public class JsonToJsonTransformationPolicy {
     @OnRequestContent
     public ReadWriteStream onRequestContent(Request request, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.REQUEST) {
-            return TransformableRequestStreamBuilder
+            TransformableStreamBuilder streamBuilder = TransformableRequestStreamBuilder
                     .on(request)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .transform(map(executionContext))
-                    .build();
+                    .transform(map(executionContext));
+
+            // If there is no `content-type` header then define it as `application/json`.
+            if(request.headers().contentType() == null) {
+                streamBuilder.contentType(MediaType.APPLICATION_JSON);
+            }
+
+            return streamBuilder.build();
         }
 
         return null;
