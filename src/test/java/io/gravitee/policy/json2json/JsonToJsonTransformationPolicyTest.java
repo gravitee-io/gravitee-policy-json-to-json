@@ -15,10 +15,10 @@
  */
 package io.gravitee.policy.json2json;
 
+import io.gravitee.el.TemplateContext;
+import io.gravitee.el.TemplateEngine;
 import io.gravitee.gateway.api.ExecutionContext;
 import io.gravitee.gateway.api.buffer.Buffer;
-import io.gravitee.gateway.api.expression.TemplateContext;
-import io.gravitee.gateway.api.expression.TemplateEngine;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 import org.apache.commons.io.IOUtils;
@@ -113,6 +113,11 @@ public class JsonToJsonTransformationPolicyTest {
         @Override
         public String convert(String s) {
             return s;
+        }
+
+        @Override
+        public <T> T getValue(String expression, Class<T> clazz) {
+            return null;
         }
 
         @Override
