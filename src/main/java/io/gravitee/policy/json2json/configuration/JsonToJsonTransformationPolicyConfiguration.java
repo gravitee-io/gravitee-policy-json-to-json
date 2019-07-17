@@ -27,6 +27,9 @@ public class JsonToJsonTransformationPolicyConfiguration implements PolicyConfig
 
     private String specification;
 
+    //by default, we override the content-type to be backward compatible
+    private boolean overrideContentType = true;
+
     public PolicyScope getScope() {
         return scope;
     }
@@ -41,5 +44,13 @@ public class JsonToJsonTransformationPolicyConfiguration implements PolicyConfig
 
     public void setSpecification(String specification) {
         this.specification = specification;
+    }
+
+    public boolean isOverrideContentType() {
+        return overrideContentType;
+    }
+
+    public void setOverrideContentType(boolean overrideContentType) {
+        this.overrideContentType = overrideContentType;
     }
 }
