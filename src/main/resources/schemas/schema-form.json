@@ -9,6 +9,12 @@
       "default": "REQUEST",
       "enum" : [ "REQUEST", "RESPONSE" ]
     },
+    "overrideContentType" : {
+      "title": "Override the Content-Type",
+      "description": "Enforce the Content-Type: application/json",
+      "type" : "boolean",
+      "default": true
+    },
     "specification" : {
       "title": "JOLT specification",
       "type" : "string",
