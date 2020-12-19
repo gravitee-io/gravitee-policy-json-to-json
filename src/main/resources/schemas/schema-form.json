@@ -28,7 +28,8 @@
           "allowDropFileTypes": true,
           "autoCloseTags": true,
           "mode": "javascript"
-        }
+        },
+        "expression-language": true
       }
     }
   },
