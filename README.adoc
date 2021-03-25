@@ -25,6 +25,10 @@ This policy is based on the https://github.com/bazaarvoice/jolt[JOLT^] library.
 In APIM, you need to provide the JOLT specification
 in the policy configuration.
 
+=== Policy identifier
+
+You can enable or disable the policy with policy identifier `json-to-json`.
+
 == Configuration
 
 You can configure the policy with the following options:
