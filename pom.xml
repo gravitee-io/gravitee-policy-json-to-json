@@ -22,7 +22,7 @@
 
     <groupId>io.gravitee.policy</groupId>
     <artifactId>gravitee-policy-json-to-json</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.0</version>
     <packaging>jar</packaging>
     <name>Gravitee.io APIM - Policy - JSON to JSON Transformation</name>
     <description>Description of the JSON to JSON Transformation Gravitee Policy</description>
@@ -46,6 +46,7 @@
         <json-schema-generator-maven-plugin.outputDirectory>${project.build.directory}/schemas</json-schema-generator-maven-plugin.outputDirectory>
 
         <maven-assembly-plugin.version>2.5.5</maven-assembly-plugin.version>
+        <publish-folder-path>graviteeio-apim/plugins/policies</publish-folder-path>
     </properties>
 
     <dependencyManagement>
