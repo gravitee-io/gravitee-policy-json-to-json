@@ -31,7 +31,6 @@ import io.gravitee.policy.api.annotations.OnRequestContent;
 import io.gravitee.policy.api.annotations.OnResponseContent;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 import io.gravitee.policy.json2json.configuration.PolicyScope;
-
 import java.util.List;
 import java.util.function.Function;
 
@@ -53,9 +52,7 @@ public class JsonToJsonTransformationPolicy {
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.RESPONSE) {
-            TransformableStreamBuilder builder = TransformableResponseStreamBuilder
-                    .on(response)
-                    .transform(map(executionContext));
+            TransformableStreamBuilder builder = TransformableResponseStreamBuilder.on(response).transform(map(executionContext));
 
             if (jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()) {
                 builder.contentType(MediaType.APPLICATION_JSON);
@@ -70,9 +67,7 @@ public class JsonToJsonTransformationPolicy {
     @OnRequestContent
     public ReadWriteStream onRequestContent(Request request, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.REQUEST) {
-            TransformableStreamBuilder builder = TransformableRequestStreamBuilder
-                    .on(request)
-                    .transform(map(executionContext));
+            TransformableStreamBuilder builder = TransformableRequestStreamBuilder.on(request).transform(map(executionContext));
 
             if (jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()) {
                 builder.contentType(MediaType.APPLICATION_JSON);
@@ -88,8 +83,9 @@ public class JsonToJsonTransformationPolicy {
         return input -> {
             try {
                 // Get JOLT specification and transform it using internal template engine
-                String specification = executionContext.getTemplateEngine()
-                        .convert(jsonToJsonTransformationPolicyConfiguration.getSpecification());
+                String specification = executionContext
+                    .getTemplateEngine()
+                    .convert(jsonToJsonTransformationPolicyConfiguration.getSpecification());
 
                 List<Object> chainrSpecJSON = JsonUtils.jsonToList(specification);
                 Chainr chainr = Chainr.fromSpec(chainrSpecJSON);
