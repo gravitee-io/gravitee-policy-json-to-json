@@ -21,5 +21,5 @@ package io.gravitee.policy.json2json.configuration;
  */
 public enum PolicyScope {
     REQUEST,
-    RESPONSE
+    RESPONSE,
 }

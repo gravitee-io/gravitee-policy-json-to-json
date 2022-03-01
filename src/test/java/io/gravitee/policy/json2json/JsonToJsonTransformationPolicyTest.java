@@ -15,12 +15,18 @@
  */
 package io.gravitee.policy.json2json;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import io.gravitee.el.TemplateContext;
 import io.gravitee.el.TemplateEngine;
 import io.gravitee.gateway.api.ExecutionContext;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,13 +36,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -85,7 +84,10 @@ public class JsonToJsonTransformationPolicyTest {
         when(jsonToJsonTransformationPolicyConfiguration.getSpecification()).thenReturn(specification);
         when(executionContext.getTemplateEngine()).thenReturn(new MockTemplateEngine());
 
-        Assertions.assertThrows(TransformationException.class, () -> jsonToJsonTransformationPolicy.map(executionContext).apply(Buffer.buffer(input)));
+        Assertions.assertThrows(
+            TransformationException.class,
+            () -> jsonToJsonTransformationPolicy.map(executionContext).apply(Buffer.buffer(input))
+        );
     }
 
     private String loadResource(String resource) throws IOException {

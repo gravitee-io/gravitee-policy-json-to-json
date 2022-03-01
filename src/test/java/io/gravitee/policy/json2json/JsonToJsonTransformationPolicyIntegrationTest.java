@@ -15,6 +15,12 @@
  */
 package io.gravitee.policy.json2json;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.bazaarvoice.jolt.JsonUtils;
 import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.MediaType;
@@ -29,6 +35,10 @@ import io.gravitee.policy.api.PolicyChain;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 import io.gravitee.policy.json2json.configuration.PolicyScope;
 import io.gravitee.reporter.api.http.Metrics;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.time.Instant;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,17 +47,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.time.Instant;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -129,7 +128,8 @@ public class JsonToJsonTransformationPolicyIntegrationTest {
         assertThat(request.headers()).doesNotContainKey(HttpHeaders.CONTENT_TYPE);
         assertThat(request.headers()).doesNotContainKey(HttpHeaders.TRANSFER_ENCODING);
         assertThat(request.headers()).doesNotContainKey(HttpHeaders.CONTENT_LENGTH);
-        assertThat(request.metrics().getMessage()).isEqualTo("Unable to apply JSON to JSON transformation: Unable to unmarshal JSON to a List.");
+        assertThat(request.metrics().getMessage())
+            .isEqualTo("Unable to apply JSON to JSON transformation: Unable to unmarshal JSON to a List.");
         verify(policyChain, times(1)).streamFailWith(any());
     }
 
