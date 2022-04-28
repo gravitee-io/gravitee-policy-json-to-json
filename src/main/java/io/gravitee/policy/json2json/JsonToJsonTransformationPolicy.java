@@ -27,6 +27,7 @@ import io.gravitee.gateway.api.http.stream.TransformableResponseStreamBuilder;
 import io.gravitee.gateway.api.http.stream.TransformableStreamBuilder;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
+import io.gravitee.policy.api.PolicyChain;
 import io.gravitee.policy.api.annotations.OnRequestContent;
 import io.gravitee.policy.api.annotations.OnResponseContent;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
@@ -50,9 +51,12 @@ public class JsonToJsonTransformationPolicy {
     }
 
     @OnResponseContent
-    public ReadWriteStream onResponseContent(Response response, ExecutionContext executionContext) {
+    public ReadWriteStream onResponseContent(Response response, PolicyChain chain, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.RESPONSE) {
-            TransformableStreamBuilder builder = TransformableResponseStreamBuilder.on(response).transform(map(executionContext));
+            TransformableStreamBuilder builder = TransformableResponseStreamBuilder
+                .on(response)
+                .chain(chain)
+                .transform(map(executionContext));
 
             if (jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()) {
                 builder.contentType(MediaType.APPLICATION_JSON);
@@ -65,9 +69,12 @@ public class JsonToJsonTransformationPolicy {
     }
 
     @OnRequestContent
-    public ReadWriteStream onRequestContent(Request request, ExecutionContext executionContext) {
+    public ReadWriteStream onRequestContent(Request request, PolicyChain chain, ExecutionContext executionContext) {
         if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.REQUEST) {
-            TransformableStreamBuilder builder = TransformableRequestStreamBuilder.on(request).transform(map(executionContext));
+            TransformableStreamBuilder builder = TransformableRequestStreamBuilder
+                .on(request)
+                .chain(chain)
+                .transform(map(executionContext));
 
             if (jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()) {
                 builder.contentType(MediaType.APPLICATION_JSON);
