@@ -1,9 +1,14 @@
 {
-  "id": "my-api-get",
-  "name": "my-api",
+  "id": "post-jolt-spec-with-el",
+  "name": "post-jolt-spec-with-el",
   "gravitee": "2.0.0",
+  "properties" : [ {
+    "key" : "my-prop",
+    "value" : "my-value",
+    "encrypted" : false
+  } ],
   "proxy": {
-    "context_path": "/test",
+    "context_path": "/post-jolt-spec-with-el",
     "endpoints": [
       {
         "name": "default",
@@ -26,18 +31,18 @@
         "operator": "STARTS_WITH"
       },
       "pre": [
+      ],
+      "post": [
         {
-          "name": "Json to JSON",
+          "name": "Json to Json",
           "description": "",
           "enabled": true,
           "policy": "json-to-json",
           "configuration": {
-            "scope": "REQUEST",
-            "specification": "[invalid, json, file]"
+            "scope": "RESPONSE",
+            "specification": "[{ \"operation\": \"default\", \"spec\": { \"my-prop\": \"{#properties['my-prop']}\"}}]"
           }
         }
-      ],
-      "post": [
       ]
     }
   ],

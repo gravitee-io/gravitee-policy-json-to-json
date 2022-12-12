@@ -1,9 +1,14 @@
 {
-  "id": "my-api-get",
-  "name": "my-api",
+  "id": "pre-jolt-spec-with-el",
+  "name": "pre-jolt-spec-with-el",
   "gravitee": "2.0.0",
+  "properties" : [ {
+    "key" : "my-prop",
+    "value" : "my-value",
+    "encrypted" : false
+  } ],
   "proxy": {
-    "context_path": "/test",
+    "context_path": "/pre-jolt-spec-with-el",
     "endpoints": [
       {
         "name": "default",
@@ -33,7 +38,7 @@
           "policy": "json-to-json",
           "configuration": {
             "scope": "REQUEST",
-            "specification": "[\n{\n\"operation\": \"shift\",\n\"spec\": {\n\"_id\": \"id\",\n\"*\": {\n\"$\": \"&1\"\n}\n}\n},\n{\n\"operation\": \"remove\",\n\"spec\": {\n\"__v\": \"\"\n}\n}\n]"
+            "specification": "[{ \"operation\": \"default\", \"spec\": { \"my-prop\": \"{#properties['my-prop']}\"}}]"
           }
         }
       ],

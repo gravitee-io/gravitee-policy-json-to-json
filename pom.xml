@@ -35,10 +35,10 @@
 
     <properties>
         <gravitee-bom.version>2.7</gravitee-bom.version>
-        <gravitee-gateway-api.version>2.0.0</gravitee-gateway-api.version>
+        <gravitee-gateway-api.version>2.1.0-alpha.3</gravitee-gateway-api.version>
         <gravitee-policy-api.version>1.11.0</gravitee-policy-api.version>
         <gravitee-common.version>2.0.0</gravitee-common.version>
-        <gravitee-apim-gateway-tests-sdk.version>3.20.0-alpha.2-SNAPSHOT</gravitee-apim-gateway-tests-sdk.version>
+        <gravitee-apim-gateway-tests-sdk.version>3.21.0-SNAPSHOT</gravitee-apim-gateway-tests-sdk.version>
 
         <jolt.version>0.1.1</jolt.version>
         <jsonassert.version>1.5.1</jsonassert.version>
@@ -129,6 +129,25 @@
         <dependency>
             <groupId>io.gravitee.apim.gateway</groupId>
             <artifactId>gravitee-apim-gateway-tests-sdk</artifactId>
+            <version>${gravitee-apim-gateway-tests-sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.apim.plugin.entrypoint</groupId>
+            <artifactId>gravitee-apim-plugin-entrypoint-http-proxy</artifactId>
+            <version>${gravitee-apim-gateway-tests-sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.apim.plugin.endpoint</groupId>
+            <artifactId>gravitee-apim-plugin-endpoint-http-proxy</artifactId>
+            <version>${gravitee-apim-gateway-tests-sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.apim.plugin.entrypoint</groupId>
+            <artifactId>gravitee-apim-plugin-entrypoint-sse</artifactId>
             <version>${gravitee-apim-gateway-tests-sdk.version}</version>
             <scope>test</scope>
         </dependency>
