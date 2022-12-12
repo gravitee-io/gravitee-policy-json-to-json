@@ -16,41 +16,25 @@
 package io.gravitee.policy.json2json.configuration;
 
 import io.gravitee.policy.api.PolicyConfiguration;
+import lombok.*;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class JsonToJsonTransformationPolicyConfiguration implements PolicyConfiguration {
 
+    @Builder.Default
     private PolicyScope scope = PolicyScope.REQUEST;
 
     private String specification;
 
     //by default, we override the content-type to be backward compatible
+    @Builder.Default
     private boolean overrideContentType = true;
-
-    public PolicyScope getScope() {
-        return scope;
-    }
-
-    public void setScope(PolicyScope scope) {
-        this.scope = scope;
-    }
-
-    public String getSpecification() {
-        return specification;
-    }
-
-    public void setSpecification(String specification) {
-        this.specification = specification;
-    }
-
-    public boolean isOverrideContentType() {
-        return overrideContentType;
-    }
-
-    public void setOverrideContentType(boolean overrideContentType) {
-        this.overrideContentType = overrideContentType;
-    }
 }

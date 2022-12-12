@@ -1,9 +1,9 @@
 {
-  "id": "my-api-get",
-  "name": "my-api",
+  "id": "post-valid-jolt-spec",
+  "name": "post-valid-jolt-spec",
   "gravitee": "2.0.0",
   "proxy": {
-    "context_path": "/test",
+    "context_path": "/post-valid-jolt-spec",
     "endpoints": [
       {
         "name": "default",
@@ -29,13 +29,13 @@
       ],
       "post": [
         {
-          "name": "Json to JSON",
+          "name": "Json to Json",
           "description": "",
           "enabled": true,
           "policy": "json-to-json",
           "configuration": {
             "scope": "RESPONSE",
-            "specification": "[invalid, json, file]"
+            "specification": "[\n{\n\"operation\": \"shift\",\n\"spec\": {\n\"_id\": \"id\",\n\"*\": {\n\"$\": \"&1\"\n}\n}\n},\n{\n\"operation\": \"remove\",\n\"spec\": {\n\"__v\": \"\"\n}\n}\n]"
           }
         }
       ]

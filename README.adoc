@@ -7,44 +7,79 @@ image:https://img.shields.io/badge/semantic--release-conventional%20commits-e100
 image:https://circleci.com/gh/gravitee-io/gravitee-policy-json-to-json.svg?style=svg["CircleCI", link="https://circleci.com/gh/gravitee-io/gravitee-policy-json-to-json"]
 endif::[]
 
-== Scope
+== Phases
+
+=== V3 engine
 
 [cols="2*", options="header"]
 |===
+^|onRequestContent
+^|onResponseContent
+
+^.^| X
+^.^| X
+|===
+
+=== V4 engine
+
+[cols="4*", options="header"]
+|===
 ^|onRequest
 ^|onResponse
+^|onMessageRequest
+^|onMessageResponse
 
 ^.^| X
 ^.^| X
-
+^.^| X
+^.^| X
 |===
 
 == Description
 
-You can use the `json-to-json` policy to apply a transformation (or mapping) on the request and/or response content.
+You can use the `json-to-json` policy to apply a transformation (or mapping) on the request and/or response and/or
+message content.
 
 This policy is based on the https://github.com/bazaarvoice/jolt[JOLT^] library.
-In APIM, you need to provide the JOLT specification
-in the policy configuration.
+
+In APIM, you need to provide the JOLT specification in the policy configuration.
+
+NOTE: You can use APIM EL in the JOLT specification.
+
+At message level, the policy will do nothing if the processed message has no content. It means that the message will be
+re-emitted as is.
 
 == Configuration
 
 You can configure the policy with the following options:
 
+[cols="5*", options=header]
 |===
-|Property |Required |Description |Type| Default
+^| Property
+^| Required
+^| Description
+^| Type
+^| Default
 
 .^|scope
-^.^|X
-|The execution scope (`request` or `response`)
+^.^| only for v3 engine
+.^|The execution scope (`request` or `response`)
 ^.^|string
 ^.^|`REQUEST`
 
 .^|specification
 ^.^|X
-|The http://jolt-demo.appspot.com/[JOLT^] specification to apply on a given content
+.^|The http://jolt-demo.appspot.com/[JOLT^] specification to apply on a given content.
+
+Can contains EL.
 ^.^|string
+|
+
+.^|overrideContentType
 ^.^|
+.^|Override the Content-Type to `application/json`.
+^.^|string
+^.^|`true`
 
 |===
 
@@ -52,9 +87,11 @@ Example configuration:
 
 [source, json]
 ----
-"json-to-json": {
-    "scope": "REQUEST",
-    "specification": "[\n  {\n    \"operation\": \"shift\",\n    \"spec\": {\n      \"_id\": \"id\",\n      \"*\": {\n        \"$\": \"&1\"\n      }\n      \n    }\n  },\n  {\n    \"operation\": \"remove\",\n    \"spec\": {\n      \"__v\": \"\"\n    }\n  }\n]\n"
+{
+    "json-to-json": {
+        "scope": "REQUEST",
+        "specification": "[{ \"operation\": \"shift\", \"spec\": { \"_id\": \"id\", \"*\": { \"$\": \"&1\" } } }, { \"operation\": \"remove\", \"spec\": { \"__v\": \"\" } }]"
+    }
 }
 ----
 
@@ -107,12 +144,24 @@ The output is as follows:
 
 == Errors
 
-=== HTTP status code
+=== V3 engine
 
 |===
 |Code |Message
 
 .^| ```500```
-| Bad specification file or transformation cannot be executed properly
+.^| Bad specification file or transformation cannot be executed properly
+
+|===
+
+=== V4 engine
+
+|===
+|Phase | Code | Error template key | Description
+
+.^| *
+.^| ```500```
+.^| INVALID_JSON_TRANSFORMATION
+.^| Unable to apply JOLT transformation to payload
 
 |===
