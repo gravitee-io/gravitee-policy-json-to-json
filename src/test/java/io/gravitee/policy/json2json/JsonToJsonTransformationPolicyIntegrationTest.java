@@ -15,203 +15,132 @@
  */
 package io.gravitee.policy.json2json;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.bazaarvoice.jolt.JsonUtils;
-import io.gravitee.common.http.MediaType;
-import io.gravitee.el.TemplateContext;
-import io.gravitee.el.TemplateEngine;
-import io.gravitee.gateway.api.ExecutionContext;
-import io.gravitee.gateway.api.Request;
-import io.gravitee.gateway.api.Response;
-import io.gravitee.gateway.api.buffer.Buffer;
-import io.gravitee.gateway.api.http.HttpHeaderNames;
-import io.gravitee.gateway.api.http.HttpHeaders;
-import io.gravitee.gateway.api.stream.ReadWriteStream;
-import io.gravitee.policy.api.PolicyChain;
+import io.gravitee.apim.gateway.tests.sdk.AbstractPolicyTest;
+import io.gravitee.apim.gateway.tests.sdk.annotations.DeployApi;
+import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
-import io.gravitee.policy.json2json.configuration.PolicyScope;
-import io.gravitee.reporter.api.http.Metrics;
-import java.io.IOException;
+import io.vertx.rxjava3.core.buffer.Buffer;
+import io.vertx.rxjava3.core.http.HttpClient;
+import io.vertx.rxjava3.core.http.HttpClientRequest;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.time.Instant;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
  * @author GraviteeSource Team
  */
-@ExtendWith(MockitoExtension.class)
-public class JsonToJsonTransformationPolicyIntegrationTest {
-
-    @Mock
-    private JsonToJsonTransformationPolicyConfiguration jsonToJsonTransformationPolicyConfiguration;
-
-    private JsonToJsonTransformationPolicy jsonToJsonTransformationPolicy;
-
-    @Mock
-    protected ExecutionContext executionContext;
-
-    @Mock
-    private PolicyChain policyChain;
-
-    @Spy
-    private Request request;
-
-    @Spy
-    private Response response;
-
-    @BeforeEach
-    public void init() {
-        jsonToJsonTransformationPolicy = new JsonToJsonTransformationPolicy(jsonToJsonTransformationPolicyConfiguration);
-        when(executionContext.getTemplateEngine()).thenReturn(new MockTemplateEngine());
-    }
+@GatewayTest
+public class JsonToJsonTransformationPolicyIntegrationTest
+    extends AbstractPolicyTest<JsonToJsonTransformationPolicy, JsonToJsonTransformationPolicyConfiguration> {
 
     @Test
-    @DisplayName("Should transform and add header OnRequestContent")
-    public void shouldTransformAndAddHeadersOnRequestContent() throws Exception {
-        String specification = loadResource("/io/gravitee/policy/json2json/valid-specification.json");
+    @DisplayName("Should apply the transformation on the request to the backend")
+    @DeployApi("/apis/api-pre.json")
+    public void shouldTransformOnRequestContent(HttpClient client) throws Exception {
         String input = loadResource("/io/gravitee/policy/json2json/input01.json");
         String expected = loadResource("/io/gravitee/policy/json2json/expected01.json");
 
-        // Prepare context
-        when(jsonToJsonTransformationPolicyConfiguration.getSpecification()).thenReturn(specification);
-        when(jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()).thenReturn(true);
-        when(jsonToJsonTransformationPolicyConfiguration.getScope()).thenReturn(PolicyScope.REQUEST);
-        when(request.headers()).thenReturn(HttpHeaders.create());
+        wiremock.stubFor(post("/team").withHeader("Content-Type", equalTo("application/json")).willReturn(ok()));
 
-        final ReadWriteStream result = jsonToJsonTransformationPolicy.onRequestContent(request, policyChain, executionContext);
-        assertThat(result).isNotNull();
-        result.bodyHandler(resultBody -> {
-            assertResultingJsonObjectsAreEquals(expected, resultBody);
-        });
+        client
+            .rxRequest(POST, "/test")
+            .flatMap(request -> request.rxSend(Buffer.buffer(input)))
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.toFlowable();
+            })
+            .test()
+            .await()
+            .assertComplete()
+            .assertNoErrors();
 
-        result.write(Buffer.buffer(input));
-        result.end();
-
-        assertThat(request.headers().names()).contains(HttpHeaderNames.CONTENT_TYPE);
-        assertThat(request.headers().getAll(HttpHeaderNames.CONTENT_TYPE).get(0)).isEqualTo(MediaType.APPLICATION_JSON);
-        assertThat(request.headers().names()).doesNotContain(HttpHeaderNames.TRANSFER_ENCODING);
-        assertThat(request.headers().names()).contains(HttpHeaderNames.CONTENT_LENGTH);
+        wiremock.verify(1, postRequestedFor(urlPathEqualTo("/team")).withRequestBody(equalToJson(expected)));
     }
 
     @Test
-    @DisplayName("Should not transform when TransformationException thrown OnRequestContent")
-    public void shouldNotTransformAndAddHeadersOnRequestContent() throws Exception {
-        String specification = loadResource("/io/gravitee/policy/json2json/invalid-specification.json");
+    @DisplayName("Should respond with 500 when applying an invalid JOLT transformation on the request to the backed")
+    @DeployApi("/apis/api-invalid-pre.json")
+    public void shouldNotTransformOnRequestContent(HttpClient client) throws Exception {
         String input = loadResource("/io/gravitee/policy/json2json/input01.json");
 
-        // Prepare context
-        when(jsonToJsonTransformationPolicyConfiguration.getSpecification()).thenReturn(specification);
-        when(jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()).thenReturn(true);
-        when(jsonToJsonTransformationPolicyConfiguration.getScope()).thenReturn(PolicyScope.REQUEST);
-        when(request.headers()).thenReturn(HttpHeaders.create());
-        when(request.metrics()).thenReturn(Metrics.on(Instant.now().toEpochMilli()).build());
+        wiremock.stubFor(post("/team").withHeader("Content-Type", equalTo("application/json")).willReturn(ok()));
 
-        final ReadWriteStream result = jsonToJsonTransformationPolicy.onRequestContent(request, policyChain, executionContext);
-        assertThat(result).isNotNull();
-
-        result.write(Buffer.buffer(input));
-        result.end();
-
-        assertThat(request.headers().names()).doesNotContain(HttpHeaderNames.CONTENT_TYPE);
-        assertThat(request.headers().names()).doesNotContain(HttpHeaderNames.TRANSFER_ENCODING);
-        assertThat(request.headers().names()).doesNotContain(HttpHeaderNames.CONTENT_LENGTH);
-        assertThat(request.metrics().getMessage())
-            .isEqualTo("Unable to apply JSON to JSON transformation: Unable to unmarshal JSON to a List.");
-        verify(policyChain, times(1)).streamFailWith(any());
+        client
+            .rxRequest(POST, "/test")
+            .flatMap(request -> request.rxSend(Buffer.buffer(input)))
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(500);
+                return response.toFlowable();
+            })
+            .test()
+            .await()
+            .assertComplete()
+            .assertNoErrors();
     }
 
     @Test
-    @DisplayName("Should transform and add header OnResponseContent")
-    public void shouldTransformAndAddHeadersOnResponseContent() throws Exception {
-        String specification = loadResource("/io/gravitee/policy/json2json/valid-specification.json");
-        String input = loadResource("/io/gravitee/policy/json2json/input01.json");
+    @DisplayName("Should apply the transformation on the response of the backend")
+    @DeployApi("/apis/api-post.json")
+    public void shouldTransformOnResponseContent(HttpClient client) throws Exception {
+        String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
         String expected = loadResource("/io/gravitee/policy/json2json/expected01.json");
 
-        // Prepare context
-        when(jsonToJsonTransformationPolicyConfiguration.getSpecification()).thenReturn(specification);
-        when(jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()).thenReturn(true);
-        when(jsonToJsonTransformationPolicyConfiguration.getScope()).thenReturn(PolicyScope.RESPONSE);
-        when(response.headers()).thenReturn(HttpHeaders.create());
+        wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
 
-        final ReadWriteStream result = jsonToJsonTransformationPolicy.onResponseContent(response, policyChain, executionContext);
-        assertThat(result).isNotNull();
-        result.bodyHandler(resultBody -> {
-            assertResultingJsonObjectsAreEquals(expected, resultBody);
-        });
+        client
+            .rxRequest(GET, "/test")
+            .flatMap(HttpClientRequest::rxSend)
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.toFlowable();
+            })
+            .test()
+            .await()
+            .assertComplete()
+            .assertNoErrors()
+            .assertValue(result -> {
+                assertThat(JsonUtils.javason(result.toString())).isEqualTo(JsonUtils.javason(expected));
+                return true;
+            });
 
-        result.write(Buffer.buffer(input));
-        result.end();
-
-        assertThat(response.headers().names()).contains(HttpHeaderNames.CONTENT_TYPE);
-        assertThat(response.headers().getAll(HttpHeaderNames.CONTENT_TYPE).get(0)).isEqualTo(MediaType.APPLICATION_JSON);
-        assertThat(response.headers().names()).doesNotContain(HttpHeaderNames.TRANSFER_ENCODING);
-        assertThat(response.headers().names()).contains(HttpHeaderNames.CONTENT_LENGTH);
+        wiremock.verify(1, getRequestedFor(urlPathEqualTo("/team")));
     }
 
     @Test
-    @DisplayName("Should not transform when TransformationException thrown OnResponseContent")
-    public void shouldNotTransformAndAddHeadersOnResponseContent() throws Exception {
-        String specification = loadResource("/io/gravitee/policy/json2json/invalid-specification.json");
-        String input = loadResource("/io/gravitee/policy/json2json/input01.json");
+    @DisplayName("Should respond with 500 when applying an invalid JOLT transformation on the response of the backed")
+    @DeployApi("/apis/api-invalid-post.json")
+    public void shouldNotTransformOnResponseContent(HttpClient client) throws Exception {
+        String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
 
-        // Prepare context
-        when(jsonToJsonTransformationPolicyConfiguration.getSpecification()).thenReturn(specification);
-        when(jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()).thenReturn(true);
-        when(jsonToJsonTransformationPolicyConfiguration.getScope()).thenReturn(PolicyScope.RESPONSE);
-        when(response.headers()).thenReturn(HttpHeaders.create());
+        wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
 
-        final ReadWriteStream result = jsonToJsonTransformationPolicy.onResponseContent(response, policyChain, executionContext);
-        assertThat(result).isNotNull();
-
-        result.write(Buffer.buffer(input));
-        result.end();
-
-        assertThat(response.headers().names()).doesNotContain(HttpHeaderNames.CONTENT_TYPE);
-        assertThat(response.headers().names()).doesNotContain(HttpHeaderNames.TRANSFER_ENCODING);
-        assertThat(response.headers().names()).doesNotContain(HttpHeaderNames.CONTENT_LENGTH);
-        verify(policyChain, times(1)).streamFailWith(any());
+        client
+            .rxRequest(GET, "/test")
+            .flatMap(HttpClientRequest::rxSend)
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(500);
+                return response.toFlowable();
+            })
+            .test()
+            .await()
+            .assertComplete()
+            .assertNoErrors();
     }
 
-    private String loadResource(String resource) throws IOException {
-        InputStream is = this.getClass().getResourceAsStream(resource);
-        StringWriter sw = new StringWriter();
-        IOUtils.copy(is, sw, "UTF-8");
-        return sw.toString();
-    }
-
-    private void assertResultingJsonObjectsAreEquals(String expected, Object resultBody) {
-        assertThat(JsonUtils.javason(resultBody.toString())).isEqualTo(JsonUtils.javason(expected));
-    }
-
-    private class MockTemplateEngine implements TemplateEngine {
-
-        @Override
-        public String convert(String s) {
-            return s;
-        }
-
-        @Override
-        public <T> T getValue(String expression, Class<T> clazz) {
-            return null;
-        }
-
-        @Override
-        public TemplateContext getTemplateContext() {
-            return null;
+    private String loadResource(String resource) {
+        try (InputStream is = this.getClass().getResourceAsStream(resource)) {
+            return new String(Objects.requireNonNull(is).readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "";
         }
     }
 }
