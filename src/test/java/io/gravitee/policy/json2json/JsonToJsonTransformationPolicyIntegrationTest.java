@@ -88,11 +88,63 @@ public class JsonToJsonTransformationPolicyIntegrationTest
     }
 
     @Test
+    @DisplayName("Should apply the transformation with EL on the request to the backend")
+    @DeployApi("/apis/api-with-el-pre.json")
+    public void shouldTransformWithELOnRequestContent(HttpClient client) throws Exception {
+        String input = loadResource("/io/gravitee/policy/json2json/input01.json");
+        String expected = loadResource("/io/gravitee/policy/json2json/expected02.json");
+
+        wiremock.stubFor(post("/team").withHeader("Content-Type", equalTo("application/json")).willReturn(ok()));
+
+        client
+            .rxRequest(POST, "/test")
+            .flatMap(request -> request.rxSend(Buffer.buffer(input)))
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.toFlowable();
+            })
+            .test()
+            .await()
+            .assertComplete()
+            .assertNoErrors();
+
+        wiremock.verify(1, postRequestedFor(urlPathEqualTo("/team")).withRequestBody(equalToJson(expected)));
+    }
+
+    @Test
     @DisplayName("Should apply the transformation on the response of the backend")
     @DeployApi("/apis/api-post.json")
     public void shouldTransformOnResponseContent(HttpClient client) throws Exception {
         String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
         String expected = loadResource("/io/gravitee/policy/json2json/expected01.json");
+
+        wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
+
+        client
+            .rxRequest(GET, "/test")
+            .flatMap(HttpClientRequest::rxSend)
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.toFlowable();
+            })
+            .test()
+            .await()
+            .assertComplete()
+            .assertNoErrors()
+            .assertValue(result -> {
+                assertThat(JsonUtils.javason(result.toString())).isEqualTo(JsonUtils.javason(expected));
+                return true;
+            });
+
+        wiremock.verify(1, getRequestedFor(urlPathEqualTo("/team")));
+    }
+
+    @Test
+    @DisplayName("Should apply the transformation with EL on the response of the backend")
+    @DeployApi("/apis/api-with-el-post.json")
+    public void shouldTransformWithELOnResponseContent(HttpClient client) throws Exception {
+        String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
+        String expected = loadResource("/io/gravitee/policy/json2json/expected02.json");
 
         wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
 
