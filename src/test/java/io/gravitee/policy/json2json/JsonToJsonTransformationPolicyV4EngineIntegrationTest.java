@@ -65,6 +65,7 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
 
             client
                 .rxRequest(POST, requestUri)
+                .map(r -> r.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
                 .flatMap(request -> request.rxSend(input.toString()))
                 .flatMapPublisher(response -> {
                     assertThat(response.statusCode()).isEqualTo(200);
@@ -90,6 +91,7 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
 
             client
                 .rxRequest(POST, requestUri)
+                .map(r -> r.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
                 .flatMap(request -> request.rxSend(input.toString()))
                 .flatMapPublisher(response -> {
                     assertThat(response.statusCode()).isEqualTo(500);
@@ -120,7 +122,9 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
             var backendResponse = load("/io/gravitee/policy/json2json/input01.json");
             var expected = load("/io/gravitee/policy/json2json/expected02.json");
 
-            wiremock.stubFor(get("/team").willReturn(ok(backendResponse.toString())));
+            wiremock.stubFor(
+                get("/team").willReturn(ok(backendResponse.toString()).withHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+            );
 
             client
                 .rxRequest(GET, requestUri)
@@ -147,7 +151,9 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
         ) throws Exception {
             var backendResponse = load("/io/gravitee/policy/json2json/input01.json");
 
-            wiremock.stubFor(get("/team").willReturn(ok(backendResponse.toString())));
+            wiremock.stubFor(
+                get("/team").willReturn(ok(backendResponse.toString()).withHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+            );
 
             client
                 .rxRequest(GET, requestUri)

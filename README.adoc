@@ -46,6 +46,9 @@ In APIM, you need to provide the JOLT specification in the policy configuration.
 
 NOTE: You can use APIM EL in the JOLT specification.
 
+At request/response level, the policy will do nothing if the processed request/response does not contain JSON. This
+policy checks the `Content-Type` header before applying any transformation.
+
 At message level, the policy will do nothing if the processed message has no content. It means that the message will be
 re-emitted as is.
 

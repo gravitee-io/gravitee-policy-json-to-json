@@ -15,6 +15,7 @@
  */
 package io.gravitee.policy.test;
 
+import io.gravitee.common.http.MediaType;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.HttpHeaderNames;
 import io.gravitee.gateway.api.http.HttpHeaders;
@@ -34,6 +35,13 @@ public class ResponseBuilder {
 
     public static ResponseBuilder aResponse() {
         return new ResponseBuilder();
+    }
+
+    public ResponseBuilder jsonBody(String body) {
+        this.body = Buffer.buffer(body);
+        this.headers.set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(this.body.length()));
+        this.headers.set(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        return this;
     }
 
     public ResponseBuilder body(String body) {

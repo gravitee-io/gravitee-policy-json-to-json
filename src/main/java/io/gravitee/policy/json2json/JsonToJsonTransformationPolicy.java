@@ -31,6 +31,7 @@ import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicy
 import io.gravitee.policy.v3.json2json.JsonToJsonTransformationPolicyV3;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
+import java.util.Optional;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -70,12 +71,16 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
     }
 
     private Maybe<Buffer> transformBody(final HttpExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
-        return applyJoltTransform(ctx, body, httpHeaders)
-            .onErrorResumeWith(
-                ctx.interruptBodyWith(
-                    new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
-                )
-            );
+        var jsonContentType = Optional.ofNullable(httpHeaders.get(HttpHeaderNames.CONTENT_TYPE)).map(v -> v.toLowerCase().contains("json"));
+        if (jsonContentType.orElse(false)) {
+            return applyJoltTransform(ctx, body, httpHeaders)
+                .onErrorResumeWith(
+                    ctx.interruptBodyWith(
+                        new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
+                    )
+                );
+        }
+        return body;
     }
 
     private Maybe<Message> transformMessage(final MessageExecutionContext ctx, final Message message) {

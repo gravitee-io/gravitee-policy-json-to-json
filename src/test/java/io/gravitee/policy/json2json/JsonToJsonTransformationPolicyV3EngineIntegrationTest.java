@@ -23,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bazaarvoice.jolt.JsonUtils;
 import io.gravitee.apim.gateway.tests.sdk.annotations.DeployApi;
 import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
+import io.gravitee.common.http.MediaType;
+import io.gravitee.gateway.api.http.HttpHeaderNames;
 import io.vertx.rxjava3.core.buffer.Buffer;
 import io.vertx.rxjava3.core.http.HttpClient;
 import io.vertx.rxjava3.core.http.HttpClientRequest;
@@ -52,6 +54,7 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
 
             client
                 .rxRequest(POST, "/pre-valid-jolt-spec")
+                .map(r -> r.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
                 .flatMap(request -> request.rxSend(Buffer.buffer(input)))
                 .flatMapPublisher(response -> {
                     assertThat(response.statusCode()).isEqualTo(200);
@@ -74,6 +77,7 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
 
             client
                 .rxRequest(POST, "/pre-invalid-jolt")
+                .map(r -> r.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
                 .flatMap(request -> request.rxSend(Buffer.buffer(input)))
                 .flatMapPublisher(response -> {
                     assertThat(response.statusCode()).isEqualTo(500);
@@ -94,6 +98,7 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
 
             client
                 .rxRequest(POST, "/pre-jolt-spec-with-el")
+                .map(r -> r.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
                 .flatMap(request -> request.rxSend(Buffer.buffer(input)))
                 .flatMapPublisher(response -> {
                     assertThat(response.statusCode()).isEqualTo(200);
@@ -120,7 +125,9 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
             String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
             String expected = loadResource("/io/gravitee/policy/json2json/expected01.json");
 
-            wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
+            wiremock.stubFor(
+                get("/team").willReturn(ok(backendResponse).withHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+            );
 
             client
                 .rxRequest(GET, "/post-valid-jolt-spec")
@@ -146,7 +153,9 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
             String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
             String expected = loadResource("/io/gravitee/policy/json2json/expected02.json");
 
-            wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
+            wiremock.stubFor(
+                get("/team").willReturn(ok(backendResponse).withHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+            );
 
             client
                 .rxRequest(GET, "/post-jolt-spec-with-el")
@@ -172,7 +181,9 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
             throws Exception {
             String backendResponse = loadResource("/io/gravitee/policy/json2json/input01.json");
 
-            wiremock.stubFor(get("/team").willReturn(ok(backendResponse)));
+            wiremock.stubFor(
+                get("/team").willReturn(ok(backendResponse).withHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+            );
 
             client
                 .rxRequest(GET, "/post-invalid-jolt")
