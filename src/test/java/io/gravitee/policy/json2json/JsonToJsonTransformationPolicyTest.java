@@ -32,6 +32,9 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class JsonToJsonTransformationPolicyTest {
@@ -48,7 +51,7 @@ public class JsonToJsonTransformationPolicyTest {
 
         @Test
         void should_apply_jolt_transformation_on_request_body_and_update_content_length() {
-            var ctx = new ExecutionContextBuilder().request(aRequest().body(INPUT_CONTENT).build()).build();
+            var ctx = new ExecutionContextBuilder().request(aRequest().jsonBody(INPUT_CONTENT).build()).build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(false).build())
                 .onRequest(ctx)
                 .test()
@@ -70,7 +73,7 @@ public class JsonToJsonTransformationPolicyTest {
         @Test
         void should_override_request_header_content_type_when_configured() {
             var ctx = new ExecutionContextBuilder()
-                .request(aRequest().body(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
+                .request(aRequest().jsonBody(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
                 .build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(true).build())
                 .onRequest(ctx)
@@ -85,7 +88,7 @@ public class JsonToJsonTransformationPolicyTest {
         @Test
         void should_not_override_request_headers_when_configured() {
             var ctx = new ExecutionContextBuilder()
-                .request(aRequest().body(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
+                .request(aRequest().jsonBody(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
                 .build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(false).build())
                 .onRequest(ctx)
@@ -99,7 +102,7 @@ public class JsonToJsonTransformationPolicyTest {
 
         @Test
         void should_interrupt_execution_when_jolt_spec_is_invalid() {
-            var ctx = new ExecutionContextBuilder().request(aRequest().body(INPUT_CONTENT).build()).build();
+            var ctx = new ExecutionContextBuilder().request(aRequest().jsonBody(INPUT_CONTENT).build()).build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(INVALID_JOLT).build())
                 .onRequest(ctx)
                 .test()
@@ -112,6 +115,35 @@ public class JsonToJsonTransformationPolicyTest {
                     return true;
                 });
         }
+
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = { MediaType.TEXT_PLAIN, "" })
+        void should_ignore_non_json_body(String contentType) {
+            String textContent = "plain text";
+            var requestBuilder = aRequest().body(textContent);
+            if (contentType != null) {
+                requestBuilder.contentType(contentType);
+            }
+            var ctx = new ExecutionContextBuilder().request(requestBuilder.build()).build();
+
+            policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(true).build())
+                .onRequest(ctx)
+                .test()
+                .assertComplete();
+
+            ctx
+                .request()
+                .body()
+                .test()
+                .assertComplete()
+                .assertValue(buffer -> {
+                    assertThat(buffer).hasToString(textContent);
+                    return true;
+                });
+            assertThat(ctx.request().headers().toSingleValueMap())
+                .contains(Map.entry(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(textContent.length())));
+        }
     }
 
     @Nested
@@ -119,7 +151,7 @@ public class JsonToJsonTransformationPolicyTest {
 
         @Test
         void should_apply_jolt_transformation_on_response_body_and_update_content_length() {
-            var ctx = new ExecutionContextBuilder().response(aResponse().body(INPUT_CONTENT).build()).build();
+            var ctx = new ExecutionContextBuilder().response(aResponse().jsonBody(INPUT_CONTENT).build()).build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(false).build())
                 .onResponse(ctx)
                 .test()
@@ -141,7 +173,7 @@ public class JsonToJsonTransformationPolicyTest {
         @Test
         void should_override_response_header_content_type_when_configured() {
             var ctx = new ExecutionContextBuilder()
-                .response(aResponse().body(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
+                .response(aResponse().jsonBody(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
                 .build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(true).build())
                 .onResponse(ctx)
@@ -156,7 +188,7 @@ public class JsonToJsonTransformationPolicyTest {
         @Test
         void should_not_override_response_headers_when_configured() {
             var ctx = new ExecutionContextBuilder()
-                .response(aResponse().body(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
+                .response(aResponse().jsonBody(INPUT_CONTENT).contentType("application/vnd.anything.v1+json").build())
                 .build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(false).build())
                 .onResponse(ctx)
@@ -170,7 +202,7 @@ public class JsonToJsonTransformationPolicyTest {
 
         @Test
         void should_interrupt_execution_when_jolt_spec_is_invalid() {
-            var ctx = new ExecutionContextBuilder().response(aResponse().body(INPUT_CONTENT).build()).build();
+            var ctx = new ExecutionContextBuilder().response(aResponse().jsonBody(INPUT_CONTENT).build()).build();
             policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(INVALID_JOLT).build())
                 .onResponse(ctx)
                 .test()
@@ -182,6 +214,32 @@ public class JsonToJsonTransformationPolicyTest {
                         .containsExactly(500, "JSON_INVALID_SPECIFICATION", "Unable to apply JOLT transformation to payload");
                     return true;
                 });
+        }
+
+        @Test
+        void should_ignore_non_json_body() {
+            String textContent = "plain text";
+            var ctx = new ExecutionContextBuilder()
+                .response(aResponse().body(textContent).contentType(MediaType.TEXT_PLAIN).build())
+                .build();
+
+            policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(true).build())
+                .onResponse(ctx)
+                .test()
+                .assertComplete();
+
+            ctx
+                .response()
+                .body()
+                .test()
+                .assertComplete()
+                .assertValue(buffer -> {
+                    assertThat(buffer).hasToString(textContent);
+                    return true;
+                });
+            assertThat(ctx.response().headers().toSingleValueMap())
+                .contains(Map.entry(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(textContent.length())))
+                .contains(Map.entry(HttpHeaderNames.CONTENT_TYPE, MediaType.TEXT_PLAIN));
         }
     }
 
