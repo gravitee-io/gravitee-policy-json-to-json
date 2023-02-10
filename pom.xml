@@ -40,7 +40,7 @@
         <gravitee-common.version>2.0.0</gravitee-common.version>
         <gravitee-apim-gateway-tests-sdk.version>3.20.0</gravitee-apim-gateway-tests-sdk.version>
 
-        <jolt.version>0.1.1</jolt.version>
+        <jolt.version>0.1.7</jolt.version>
         <jsonassert.version>1.5.1</jsonassert.version>
 
         <maven-plugin-assembly.version>3.4.2</maven-plugin-assembly.version>
