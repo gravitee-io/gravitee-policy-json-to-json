@@ -43,7 +43,7 @@
         <jolt.version>0.1.1</jolt.version>
         <jsonassert.version>1.5.1</jsonassert.version>
 
-        <maven-plugin-assembly.version>3.4.2</maven-plugin-assembly.version>
+        <maven-plugin-assembly.version>3.5.0</maven-plugin-assembly.version>
         <maven-plugin-prettier.version>0.19</maven-plugin-prettier.version>
         <maven-plugin-prettier.prettierjava.version>1.6.2</maven-plugin-prettier.prettierjava.version>
         <maven-plugin-properties.version>1.1.0</maven-plugin-properties.version>
