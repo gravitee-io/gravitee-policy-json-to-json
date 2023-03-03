@@ -38,7 +38,7 @@
         <gravitee-gateway-api.version>2.0.1</gravitee-gateway-api.version>
         <gravitee-policy-api.version>1.11.0</gravitee-policy-api.version>
         <gravitee-common.version>2.0.0</gravitee-common.version>
-        <gravitee-apim-gateway-tests-sdk.version>3.20.1</gravitee-apim-gateway-tests-sdk.version>
+        <gravitee-apim-gateway-tests-sdk.version>3.20.2</gravitee-apim-gateway-tests-sdk.version>
 
         <jolt.version>0.1.1</jolt.version>
         <jsonassert.version>1.5.1</jsonassert.version>
