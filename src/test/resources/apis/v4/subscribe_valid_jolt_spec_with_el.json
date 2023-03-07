@@ -3,7 +3,8 @@
   "name": "subscribe-jolt-spec-with-el",
   "apiVersion": "1.0",
   "definitionVersion": "4.0.0",
-  "type": "async",
+  "type": "message",
+  "analytics": {},
   "description": "subscribe-jolt-spec-with-el",
   "properties": [
     {

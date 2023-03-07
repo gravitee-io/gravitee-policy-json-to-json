@@ -15,9 +15,9 @@
  */
 package io.gravitee.policy.test;
 
-import io.gravitee.gateway.jupiter.core.context.DefaultExecutionContext;
-import io.gravitee.gateway.jupiter.core.context.MutableRequest;
-import io.gravitee.gateway.jupiter.core.context.MutableResponse;
+import io.gravitee.gateway.reactive.core.context.DefaultExecutionContext;
+import io.gravitee.gateway.reactive.core.context.MutableRequest;
+import io.gravitee.gateway.reactive.core.context.MutableResponse;
 
 public class ExecutionContextBuilder {
 

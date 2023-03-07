@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.common.http.MediaType;
 import io.gravitee.gateway.api.http.HttpHeaderNames;
-import io.gravitee.gateway.jupiter.api.ExecutionFailure;
-import io.gravitee.gateway.jupiter.core.context.interruption.InterruptionFailureException;
+import io.gravitee.gateway.reactive.api.ExecutionFailure;
+import io.gravitee.gateway.reactive.core.context.interruption.InterruptionFailureException;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 import io.gravitee.policy.test.ExecutionContextBuilder;
 import io.vertx.core.json.JsonObject;

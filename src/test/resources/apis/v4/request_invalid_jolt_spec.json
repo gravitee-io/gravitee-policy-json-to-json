@@ -3,7 +3,8 @@
     "name": "request-invalid-jolt-spec",
     "apiVersion": "1.0",
     "definitionVersion": "4.0.0",
-    "type": "sync",
+    "type": "proxy",
+    "analytics": {},
     "description": "request-invalid-jolt-spec",
     "listeners": [
         {

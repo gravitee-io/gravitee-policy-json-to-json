@@ -3,7 +3,8 @@
     "name": "request-jolt-spec-with-el",
     "apiVersion": "1.0",
     "definitionVersion": "4.0.0",
-    "type": "sync",
+    "type": "proxy",
+    "analytics": {},
     "description": "request-jolt-spec-with-el",
     "properties" : [ {
         "key" : "my-prop",

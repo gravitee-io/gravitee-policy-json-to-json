@@ -3,7 +3,8 @@
   "name": "subscribe-invalid-jolt-spec",
   "apiVersion": "1.0",
   "definitionVersion": "4.0.0",
-  "type": "async",
+  "type": "message",
+  "analytics": {},
   "description": "subscribe-invalid-jolt-spec",
   "listeners": [
     {
