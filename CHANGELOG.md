@@ -1,3 +1,10 @@
+# [2.0.0-alpha.2](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.0.0-alpha.1...2.0.0-alpha.2) (2023-03-13)
+
+
+### Bug Fixes
+
+* rename 'jupiter' package in 'reactive' ([6bae723](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/6bae723074feab0a0238a265b166c83602c4bd7d))
+
 # [2.0.0-alpha.1](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/1.7.1...2.0.0-alpha.1) (2023-01-04)
 
 
