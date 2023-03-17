@@ -1,3 +1,27 @@
+# [2.0.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/1.7.1...2.0.0) (2023-03-17)
+
+
+### Bug Fixes
+
+* **deps:** upgrade gravitee-bom & alpha version ([f8ad9f2](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/f8ad9f26eba5a2b321bb063dc5d0297588615ef3))
+* rename 'jupiter' package in 'reactive' ([6bae723](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/6bae723074feab0a0238a265b166c83602c4bd7d))
+
+
+### Features
+
+* apply json transformation on messages ([aaef745](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/aaef745b5a5bc1c01cbaf2c8dd34239b1e8b28c2))
+* ignore request/response having non json body ([f2fbf8f](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/f2fbf8f34dbc0a5fe61b678f130a553d9ca84b62))
+
+
+### BREAKING CHANGES
+
+* Requires APIM 3.20 minimum because it requires RxJava3.
+
+For request/response transformation in V4 engine, the policy will
+apply only when a JSON like the Content-Type header is defined.
+
+https://gravitee.atlassian.net/browse/APIM-40
+
 # [2.0.0-alpha.2](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.0.0-alpha.1...2.0.0-alpha.2) (2023-03-13)
 
 
