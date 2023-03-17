@@ -1,0 +1,68 @@
+{
+    "id": "request-invalid-jolt-spec",
+    "name": "request-invalid-jolt-spec",
+    "apiVersion": "1.0",
+    "definitionVersion": "4.0.0",
+    "type": "proxy",
+    "analytics": {},
+    "description": "request-invalid-jolt-spec",
+    "listeners": [
+        {
+            "type": "http",
+            "paths": [
+                {
+                    "path": "/request-invalid-jolt-spec"
+                }
+            ],
+            "entrypoints": [
+                {
+                    "type": "http-proxy"
+                }
+            ]
+        }
+    ],
+    "endpointGroups": [
+        {
+            "name": "default",
+            "type": "http-proxy",
+            "endpoints": [
+                {
+                    "name": "default",
+                    "type": "http-proxy",
+                    "weight": 1,
+                    "inheritConfiguration": false,
+                    "configuration": {
+                        "target": "http://localhost:8080/team"
+                    }
+                }
+            ]
+        }
+    ],
+    "flows": [
+        {
+            "name": "flow-1",
+            "enabled": true,
+            "selectors": [
+                {
+                    "type": "http",
+                    "path": "/",
+                    "pathOperator": "STARTS_WITH"
+                }
+            ],
+            "request": [
+                {
+                    "name": "Json to Json",
+                    "description": "",
+                    "enabled": true,
+                    "policy": "json-to-json",
+                    "configuration": {
+                        "specification": "[invalid, json, file]"
+                    }
+                }
+            ],
+            "response": [],
+            "subscribe": [],
+            "publish": []
+        }
+    ]
+}

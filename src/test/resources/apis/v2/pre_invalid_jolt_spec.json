@@ -1,14 +1,9 @@
 {
-  "id": "my-api-post",
-  "name": "my-api",
+  "id": "pre-invalid-jolt",
+  "name": "pre-invalid-jolt",
   "gravitee": "2.0.0",
-  "properties" : [ {
-    "key" : "my-prop",
-    "value" : "my-value",
-    "encrypted" : false
-  } ],
   "proxy": {
-    "context_path": "/test",
+    "context_path": "/pre-invalid-jolt",
     "endpoints": [
       {
         "name": "default",
@@ -31,18 +26,18 @@
         "operator": "STARTS_WITH"
       },
       "pre": [
-      ],
-      "post": [
         {
-          "name": "Json to Json",
+          "name": "Json to JSON",
           "description": "",
           "enabled": true,
           "policy": "json-to-json",
           "configuration": {
-            "scope": "RESPONSE",
-            "specification": "[{ \"operation\": \"default\", \"spec\": { \"my-prop\": \"{#properties['my-prop']}\"}}]"
+            "scope": "REQUEST",
+            "specification": "[invalid, json, file]"
           }
         }
+      ],
+      "post": [
       ]
     }
   ],

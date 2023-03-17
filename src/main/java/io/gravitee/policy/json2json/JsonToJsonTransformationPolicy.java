@@ -18,92 +18,112 @@ package io.gravitee.policy.json2json;
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
 import io.gravitee.common.http.MediaType;
-import io.gravitee.gateway.api.ExecutionContext;
-import io.gravitee.gateway.api.Request;
-import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
-import io.gravitee.gateway.api.http.stream.TransformableRequestStreamBuilder;
-import io.gravitee.gateway.api.http.stream.TransformableResponseStreamBuilder;
-import io.gravitee.gateway.api.http.stream.TransformableStreamBuilder;
-import io.gravitee.gateway.api.stream.ReadWriteStream;
-import io.gravitee.gateway.api.stream.exception.TransformationException;
-import io.gravitee.policy.api.PolicyChain;
-import io.gravitee.policy.api.annotations.OnRequestContent;
-import io.gravitee.policy.api.annotations.OnResponseContent;
+import io.gravitee.gateway.api.http.HttpHeaderNames;
+import io.gravitee.gateway.api.http.HttpHeaders;
+import io.gravitee.gateway.reactive.api.ExecutionFailure;
+import io.gravitee.gateway.reactive.api.context.GenericExecutionContext;
+import io.gravitee.gateway.reactive.api.context.HttpExecutionContext;
+import io.gravitee.gateway.reactive.api.context.MessageExecutionContext;
+import io.gravitee.gateway.reactive.api.message.Message;
+import io.gravitee.gateway.reactive.api.policy.Policy;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
-import io.gravitee.policy.json2json.configuration.PolicyScope;
-import java.util.List;
-import java.util.function.Function;
+import io.gravitee.policy.v3.json2json.JsonToJsonTransformationPolicyV3;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Maybe;
+import java.util.Optional;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class JsonToJsonTransformationPolicy {
+public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPolicyV3 implements Policy {
 
-    /**
-     * Json to json transformation configuration
-     */
-    private final JsonToJsonTransformationPolicyConfiguration jsonToJsonTransformationPolicyConfiguration;
+    private static final String INVALID_JSON_TRANSFORMATION = "JSON_INVALID_SPECIFICATION";
 
-    public JsonToJsonTransformationPolicy(final JsonToJsonTransformationPolicyConfiguration jsonToJsonTransformationPolicyConfiguration) {
-        this.jsonToJsonTransformationPolicyConfiguration = jsonToJsonTransformationPolicyConfiguration;
+    public JsonToJsonTransformationPolicy(final JsonToJsonTransformationPolicyConfiguration configuration) {
+        super(configuration);
     }
 
-    @OnResponseContent
-    public ReadWriteStream onResponseContent(Response response, PolicyChain chain, ExecutionContext executionContext) {
-        if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.RESPONSE) {
-            TransformableStreamBuilder builder = TransformableResponseStreamBuilder
-                .on(response)
-                .chain(chain)
-                .transform(map(executionContext));
+    @Override
+    public String id() {
+        return "json-to-json";
+    }
 
-            if (jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()) {
-                builder.contentType(MediaType.APPLICATION_JSON);
-            }
+    @Override
+    public Completable onRequest(HttpExecutionContext ctx) {
+        return ctx.request().onBody(body -> transformBody(ctx, body, ctx.request().headers()));
+    }
 
-            return builder.build();
+    @Override
+    public Completable onResponse(HttpExecutionContext ctx) {
+        return ctx.response().onBody(body -> transformBody(ctx, body, ctx.response().headers()));
+    }
+
+    @Override
+    public Completable onMessageRequest(MessageExecutionContext ctx) {
+        return ctx.request().onMessage(message -> transformMessage(ctx, message));
+    }
+
+    @Override
+    public Completable onMessageResponse(MessageExecutionContext ctx) {
+        return ctx.response().onMessage(message -> transformMessage(ctx, message));
+    }
+
+    private Maybe<Buffer> transformBody(final HttpExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
+        var jsonContentType = Optional.ofNullable(httpHeaders.get(HttpHeaderNames.CONTENT_TYPE)).map(v -> v.toLowerCase().contains("json"));
+        if (jsonContentType.orElse(false)) {
+            return applyJoltTransform(ctx, body, httpHeaders)
+                .onErrorResumeWith(
+                    ctx.interruptBodyWith(
+                        new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
+                    )
+                );
         }
-
-        return null;
+        return body;
     }
 
-    @OnRequestContent
-    public ReadWriteStream onRequestContent(Request request, PolicyChain chain, ExecutionContext executionContext) {
-        if (jsonToJsonTransformationPolicyConfiguration.getScope() == PolicyScope.REQUEST) {
-            TransformableStreamBuilder builder = TransformableRequestStreamBuilder
-                .on(request)
-                .chain(chain)
-                .transform(map(executionContext));
-
-            if (jsonToJsonTransformationPolicyConfiguration.isOverrideContentType()) {
-                builder.contentType(MediaType.APPLICATION_JSON);
-            }
-
-            return builder.build();
-        }
-
-        return null;
+    private Maybe<Message> transformMessage(final MessageExecutionContext ctx, final Message message) {
+        return applyJoltTransform(ctx, Maybe.fromCallable(message::content), message.headers())
+            .map(message::content)
+            .defaultIfEmpty(message)
+            .toMaybe()
+            .onErrorResumeWith(
+                ctx.interruptMessageWith(
+                    new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
+                )
+            );
     }
 
-    Function<Buffer, Buffer> map(ExecutionContext executionContext) {
-        return input -> {
-            try {
-                // Get JOLT specification and transform it using internal template engine
-                String specification = executionContext
-                    .getTemplateEngine()
-                    .convert(jsonToJsonTransformationPolicyConfiguration.getSpecification());
+    private Maybe<Buffer> applyJoltTransform(
+        final GenericExecutionContext ctx,
+        final Maybe<Buffer> bufferUpstream,
+        final HttpHeaders httpHeaders
+    ) {
+        var nonEmptyBuffer = bufferUpstream.filter(b -> b.length() > 0);
+        var joltSpec = ctx
+            .getTemplateEngine()
+            .eval(configuration.getSpecification(), String.class)
+            .map(specification -> Chainr.fromSpec(JsonUtils.jsonToList(specification)));
 
-                List<Object> chainrSpecJSON = JsonUtils.jsonToList(specification);
-                Chainr chainr = Chainr.fromSpec(chainrSpecJSON);
+        return Maybe
+            .zip(
+                joltSpec,
+                nonEmptyBuffer,
+                (
+                    (chainr, buffer) -> {
+                        Object inputJSON = JsonUtils.jsonToObject(buffer.toString());
+                        Object transformedOutput = chainr.transform(inputJSON);
+                        return Buffer.buffer(JsonUtils.toJsonString(transformedOutput));
+                    }
+                )
+            )
+            .doOnSuccess(buffer -> {
+                httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(buffer.length()));
 
-                Object inputJSON = JsonUtils.jsonToObject(input.toString());
-                Object transformedOutput = chainr.transform(inputJSON);
-
-                return Buffer.buffer(JsonUtils.toJsonString(transformedOutput));
-            } catch (Exception ex) {
-                throw new TransformationException("Unable to apply JSON to JSON transformation: " + ex.getMessage(), ex);
-            }
-        };
+                if (configuration.isOverrideContentType()) {
+                    httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+                }
+            });
     }
 }

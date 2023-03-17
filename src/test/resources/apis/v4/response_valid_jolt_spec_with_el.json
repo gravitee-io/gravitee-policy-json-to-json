@@ -1,0 +1,73 @@
+{
+    "id": "response-jolt-spec-with-el",
+    "name": "response-jolt-spec-with-el",
+    "apiVersion": "1.0",
+    "definitionVersion": "4.0.0",
+    "type": "proxy",
+    "analytics": {},
+    "description": "response-jolt-spec-with-el",
+    "properties": [
+        {
+            "key": "my-prop",
+            "value": "my-value",
+            "encrypted": false
+        }
+    ],
+    "listeners": [
+        {
+            "type": "http",
+            "paths": [
+                {
+                    "path": "/response-jolt-spec-with-el"
+                }
+            ],
+            "entrypoints": [
+                {
+                    "type": "http-proxy"
+                }
+            ]
+        }
+    ],
+    "endpointGroups": [
+        {
+            "name": "default",
+            "type": "http-proxy",
+            "endpoints": [
+                {
+                    "name": "default",
+                    "type": "http-proxy",
+                    "configuration": {
+                        "target": "http://localhost:8080/team"
+                    }
+                }
+            ]
+        }
+    ],
+    "flows": [
+        {
+            "name": "flow-1",
+            "enabled": true,
+            "selectors": [
+                {
+                    "type": "http",
+                    "path": "/",
+                    "pathOperator": "STARTS_WITH"
+                }
+            ],
+            "request": [],
+            "response": [
+                {
+                    "name": "Json to Json",
+                    "description": "",
+                    "enabled": true,
+                    "policy": "json-to-json",
+                    "configuration": {
+                        "specification": "[{ \"operation\": \"default\", \"spec\": { \"my-prop\": \"{#api.properties['my-prop']}\"}}]"
+                    }
+                }
+            ],
+            "subscribe": [],
+            "publish": []
+        }
+    ]
+}
