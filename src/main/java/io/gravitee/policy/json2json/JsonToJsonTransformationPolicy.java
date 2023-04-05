@@ -18,6 +18,7 @@ package io.gravitee.policy.json2json;
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
 import io.gravitee.common.http.MediaType;
+import io.gravitee.el.TemplateEngine;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.HttpHeaderNames;
 import io.gravitee.gateway.api.http.HttpHeaders;
@@ -73,7 +74,7 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
     private Maybe<Buffer> transformBody(final HttpExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
         var jsonContentType = Optional.ofNullable(httpHeaders.get(HttpHeaderNames.CONTENT_TYPE)).map(v -> v.toLowerCase().contains("json"));
         if (jsonContentType.orElse(false)) {
-            return applyJoltTransform(ctx, body, httpHeaders)
+            return applyJoltTransform(ctx.getTemplateEngine(), body, httpHeaders)
                 .onErrorResumeWith(
                     ctx.interruptBodyWith(
                         new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
@@ -84,7 +85,7 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
     }
 
     private Maybe<Message> transformMessage(final MessageExecutionContext ctx, final Message message) {
-        return applyJoltTransform(ctx, Maybe.fromCallable(message::content), message.headers())
+        return applyJoltTransform(ctx.getTemplateEngine(message), Maybe.fromCallable(message::content), message.headers())
             .map(message::content)
             .defaultIfEmpty(message)
             .toMaybe()
@@ -96,13 +97,12 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
     }
 
     private Maybe<Buffer> applyJoltTransform(
-        final GenericExecutionContext ctx,
+        final TemplateEngine templateEngine,
         final Maybe<Buffer> bufferUpstream,
         final HttpHeaders httpHeaders
     ) {
         var nonEmptyBuffer = bufferUpstream.filter(b -> b.length() > 0);
-        var joltSpec = ctx
-            .getTemplateEngine()
+        var joltSpec = templateEngine
             .eval(configuration.getSpecification(), String.class)
             .map(specification -> Chainr.fromSpec(JsonUtils.jsonToList(specification)));
 

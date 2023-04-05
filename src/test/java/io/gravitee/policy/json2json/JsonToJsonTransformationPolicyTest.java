@@ -42,9 +42,15 @@ public class JsonToJsonTransformationPolicyTest {
     private static final String VALID_JOLT =
         "[\n{\n\"operation\": \"shift\",\n\"spec\": {\n\"_id\": \"id\",\n\"*\": {\n\"$\": \"&1\"\n}\n}\n},\n{\n\"operation\": \"remove\",\n\"spec\": {\n\"__v\": \"\"\n}\n}\n]";
 
+    private static final String VALID_MESSAGE_JOLT =
+        "[\n{\n\"operation\": \"shift\",\n\"spec\": {\n\"my-header\": \"{#message.headers['X-MESSAGE-HEADER']}\",\n\"_id\": \"id\",\n\"*\": {\n\"$\": \"&1\"\n}\n}\n},\n{\n\"operation\": \"remove\",\n\"spec\": {\n\"__v\": \"\"\n}\n}, {\n\"operation\": \"default\",\n\"spec\": {\n\"my-header\": \"{#message.headers['X-MESSAGE-HEADER']}\"}}\n]";
+
     private static final String INVALID_JOLT = "[invalid, json, file]";
     public static final String INPUT_CONTENT = "{ \"_id\": \"57762dc6ab7d620000000001\", \"name\": \"name\", \"__v\": 0}";
     public static final JsonObject EXPECTED_CONTENT = new JsonObject("{ \"id\": \"57762dc6ab7d620000000001\", \"name\": \"name\"}");
+    public static final JsonObject EXPECTED_MSG_CONTENT = new JsonObject(
+        "{ \"my-header\": \"X-VALUE\", \"id\": \"57762dc6ab7d620000000001\", \"name\": \"name\"}"
+    );
 
     @Nested
     class onRequest {
@@ -252,7 +258,9 @@ public class JsonToJsonTransformationPolicyTest {
                 .request(aRequest().messages(aMessage().content(INPUT_CONTENT).build(), aMessage().content(INPUT_CONTENT).build()).build())
                 .build();
 
-            policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(true).build())
+            policy(
+                JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_MESSAGE_JOLT).overrideContentType(true).build()
+            )
                 .onMessageRequest(ctx)
                 .test()
                 .assertComplete();
@@ -261,9 +269,9 @@ public class JsonToJsonTransformationPolicyTest {
             assertThat(messages)
                 .hasSize(2)
                 .allSatisfy(message -> {
-                    assertThat(new JsonObject(message.content().toString())).isEqualTo(EXPECTED_CONTENT);
+                    assertThat(new JsonObject(message.content().toString())).isEqualTo(EXPECTED_MSG_CONTENT);
                     assertThat(message.headers().toSingleValueMap())
-                        .contains(Map.entry(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(EXPECTED_CONTENT.toString().length())));
+                        .contains(Map.entry(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(EXPECTED_MSG_CONTENT.toString().length())));
                 });
         }
 
@@ -373,7 +381,9 @@ public class JsonToJsonTransformationPolicyTest {
                 )
                 .build();
 
-            policy(JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_JOLT).overrideContentType(true).build())
+            policy(
+                JsonToJsonTransformationPolicyConfiguration.builder().specification(VALID_MESSAGE_JOLT).overrideContentType(true).build()
+            )
                 .onMessageResponse(ctx)
                 .test()
                 .assertComplete();
@@ -382,9 +392,9 @@ public class JsonToJsonTransformationPolicyTest {
             assertThat(messages)
                 .hasSize(2)
                 .allSatisfy(message -> {
-                    assertThat(new JsonObject(message.content().toString())).isEqualTo(EXPECTED_CONTENT);
+                    assertThat(new JsonObject(message.content().toString())).isEqualTo(EXPECTED_MSG_CONTENT);
                     assertThat(message.headers().toSingleValueMap())
-                        .contains(Map.entry(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(EXPECTED_CONTENT.toString().length())));
+                        .contains(Map.entry(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(EXPECTED_MSG_CONTENT.toString().length())));
                 });
         }
 
