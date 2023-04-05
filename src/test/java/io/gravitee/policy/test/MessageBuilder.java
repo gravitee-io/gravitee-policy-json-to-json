@@ -23,6 +23,8 @@ import io.gravitee.gateway.reactive.api.message.Message;
 
 public class MessageBuilder {
 
+    public static final String MESSAGE_HEADER = "X-MESSAGE-HEADER";
+    public static final String HEADER_VALUE = "X-VALUE";
     private Buffer content = Buffer.buffer();
     private final HttpHeaders headers = HttpHeaders.create();
 
@@ -33,6 +35,7 @@ public class MessageBuilder {
     public MessageBuilder content(String body) {
         this.content = Buffer.buffer(body);
         this.headers.set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(this.content.length()));
+        this.headers.set(MESSAGE_HEADER, HEADER_VALUE);
         return this;
     }
 
