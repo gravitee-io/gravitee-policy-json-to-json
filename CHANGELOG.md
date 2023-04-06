@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.0.0...2.0.1) (2023-04-06)
+
+
+### Bug Fixes
+
+* Provide message to the TemplateEngine for message transformation ([12bf61c](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/12bf61c7e9b092ceecc70851e0ded3b6fd574693))
+
 # [2.0.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/1.7.1...2.0.0) (2023-03-17)
 
 
