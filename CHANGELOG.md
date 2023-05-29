@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.0.1...2.1.0) (2023-05-29)
+
+
+### Features
+
+* provide execution phase in manifest ([a1302ac](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/a1302ac4aac1bb77060d3f77d87581bddb9cc3f3))
+
 ## [2.0.1](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.0.0...2.0.1) (2023-04-06)
 
 
