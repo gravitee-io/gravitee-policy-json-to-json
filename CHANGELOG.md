@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.1.0...2.2.0) (2023-06-27)
+
+
+### Features
+
+* clean json-schema ([eb0f5b4](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/eb0f5b429ae9802eeef50e7585f3facd3fc12289))
+
 # [2.1.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.0.1...2.1.0) (2023-05-29)
 
 
