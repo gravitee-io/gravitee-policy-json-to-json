@@ -1,3 +1,15 @@
+# [3.0.0-alpha.1](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.2.0...3.0.0-alpha.1) (2023-06-29)
+
+
+### Bug Fixes
+
+* bump gravitee versions ([15ada72](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/15ada72747eefcb3b069b0018d37fd1d21add343))
+
+
+### BREAKING CHANGES
+
+* Use apim V4 versions
+
 # [2.2.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.1.0...2.2.0) (2023-06-27)
 
 
