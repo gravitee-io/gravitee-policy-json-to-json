@@ -44,7 +44,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
 
     @Nested
-    @GatewayTest
     @DeployApi(
         {
             "/apis/v2/pre_valid_jolt_spec_with_el.json",
@@ -105,7 +104,6 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
     }
 
     @Nested
-    @GatewayTest
     @DeployApi(
         {
             "/apis/v2/post_valid_jolt_spec_with_el.json",
@@ -170,7 +168,6 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
     }
 
     @Nested
-    @GatewayTest
     @DeployApi({ "/apis/v4/subscribe_invalid_jolt_spec.json", "/apis/v4/subscribe_valid_jolt_spec_with_el.json" })
     class OnResponseMessage extends V4EngineTest {
 

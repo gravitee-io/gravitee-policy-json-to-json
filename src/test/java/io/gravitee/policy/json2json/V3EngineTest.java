@@ -16,22 +16,11 @@
 package io.gravitee.policy.json2json;
 
 import io.gravitee.apim.gateway.tests.sdk.AbstractPolicyTest;
+import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
 import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayConfigurationBuilder;
 import io.gravitee.definition.model.Api;
 import io.gravitee.definition.model.ExecutionMode;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 
-public class V3EngineTest extends AbstractPolicyTest<JsonToJsonTransformationPolicy, JsonToJsonTransformationPolicyConfiguration> {
-
-    @Override
-    protected void configureGateway(GatewayConfigurationBuilder gatewayConfigurationBuilder) {
-        super.configureGateway(gatewayConfigurationBuilder);
-        gatewayConfigurationBuilder.set("api.jupiterMode.enabled", "false");
-    }
-
-    @Override
-    public void configureApi(Api api) {
-        super.configureApi(api);
-        api.setExecutionMode(ExecutionMode.V3);
-    }
-}
+@GatewayTest(v2ExecutionMode = ExecutionMode.V3)
+public class V3EngineTest extends AbstractPolicyTest<JsonToJsonTransformationPolicy, JsonToJsonTransformationPolicyConfiguration> {}
