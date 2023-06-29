@@ -41,7 +41,6 @@ import org.junit.jupiter.api.*;
 public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
 
     @Nested
-    @GatewayTest
     @DeployApi({ "/apis/v2/pre_valid_jolt_spec.json", "/apis/v2/pre_invalid_jolt_spec.json", "/apis/v2/pre_valid_jolt_spec_with_el.json" })
     class onRequestContent extends V3EngineTest {
 
@@ -114,7 +113,6 @@ public class JsonToJsonTransformationPolicyV3EngineIntegrationTest {
     }
 
     @Nested
-    @GatewayTest
     @DeployApi(
         { "/apis/v2/post_invalid_jolt_spec.json", "/apis/v2/post_valid_jolt_spec.json", "/apis/v2/post_valid_jolt_spec_with_el.json" }
     )
