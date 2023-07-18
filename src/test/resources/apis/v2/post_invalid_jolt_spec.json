@@ -1,45 +1,43 @@
 {
-  "id": "post-invalid-jolt",
-  "name": "post-invalid-jolt",
-  "gravitee": "2.0.0",
-  "proxy": {
-    "context_path": "/post-invalid-jolt",
-    "endpoints": [
-      {
-        "name": "default",
-        "target": "http://localhost:8080/team",
-        "http": {
-          "connectTimeout": 3000,
-          "readTimeout": 60000
-        }
-      }
-    ]
-  },
-  "flows": [
-    {
-      "name": "flow-1",
-      "methods": [
-      ],
-      "enabled": true,
-      "path-operator": {
-        "path": "/",
-        "operator": "STARTS_WITH"
-      },
-      "pre": [
-      ],
-      "post": [
+    "id": "post-invalid-jolt",
+    "name": "post-invalid-jolt",
+    "gravitee": "2.0.0",
+    "proxy": {
+        "context_path": "/post-invalid-jolt",
+        "endpoints": [
+            {
+                "name": "default",
+                "target": "http://localhost:8080/team",
+                "http": {
+                    "connectTimeout": 3000,
+                    "readTimeout": 60000
+                }
+            }
+        ]
+    },
+    "flows": [
         {
-          "name": "Json to JSON",
-          "description": "",
-          "enabled": true,
-          "policy": "json-to-json",
-          "configuration": {
-            "scope": "RESPONSE",
-            "specification": "[invalid, json, file]"
-          }
+            "name": "flow-1",
+            "methods": [],
+            "enabled": true,
+            "path-operator": {
+                "path": "/",
+                "operator": "STARTS_WITH"
+            },
+            "pre": [],
+            "post": [
+                {
+                    "name": "Json to JSON",
+                    "description": "",
+                    "enabled": true,
+                    "policy": "json-to-json",
+                    "configuration": {
+                        "scope": "RESPONSE",
+                        "specification": "[invalid, json, file]"
+                    }
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "resources": []
+    ],
+    "resources": []
 }
