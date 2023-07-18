@@ -1,11 +1,11 @@
-/**
- * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,13 +15,18 @@
  */
 package io.gravitee.policy.json2json;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.apim.gateway.tests.sdk.annotations.DeployApi;
-import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.gateway.api.http.HttpHeaderNames;
 import io.vertx.core.http.HttpMethod;
@@ -44,7 +49,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
 
     @Nested
-    @GatewayTest
     @DeployApi(
         {
             "/apis/v2/pre_valid_jolt_spec_with_el.json",
@@ -105,7 +109,6 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
     }
 
     @Nested
-    @GatewayTest
     @DeployApi(
         {
             "/apis/v2/post_valid_jolt_spec_with_el.json",
@@ -170,7 +173,6 @@ public class JsonToJsonTransformationPolicyV4EngineIntegrationTest {
     }
 
     @Nested
-    @GatewayTest
     @DeployApi({ "/apis/v4/subscribe_invalid_jolt_spec.json", "/apis/v4/subscribe_valid_jolt_spec_with_el.json" })
     class OnResponseMessage extends V4EngineTest {
 

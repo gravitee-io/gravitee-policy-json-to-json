@@ -1,50 +1,50 @@
 {
-  "id": "post-jolt-spec-with-el",
-  "name": "post-jolt-spec-with-el",
-  "gravitee": "2.0.0",
-  "properties" : [ {
-    "key" : "my-prop",
-    "value" : "my-value",
-    "encrypted" : false
-  } ],
-  "proxy": {
-    "context_path": "/post-jolt-spec-with-el",
-    "endpoints": [
-      {
-        "name": "default",
-        "target": "http://localhost:8080/team",
-        "http": {
-          "connectTimeout": 3000,
-          "readTimeout": 60000
-        }
-      }
-    ]
-  },
-  "flows": [
-    {
-      "name": "flow-1",
-      "methods": [
-      ],
-      "enabled": true,
-      "path-operator": {
-        "path": "/",
-        "operator": "STARTS_WITH"
-      },
-      "pre": [
-      ],
-      "post": [
+    "id": "post-jolt-spec-with-el",
+    "name": "post-jolt-spec-with-el",
+    "gravitee": "2.0.0",
+    "properties": [
         {
-          "name": "Json to Json",
-          "description": "",
-          "enabled": true,
-          "policy": "json-to-json",
-          "configuration": {
-            "scope": "RESPONSE",
-            "specification": "[{ \"operation\": \"default\", \"spec\": { \"my-prop\": \"{#properties['my-prop']}\"}}]"
-          }
+            "key": "my-prop",
+            "value": "my-value",
+            "encrypted": false
         }
-      ]
-    }
-  ],
-  "resources": []
+    ],
+    "proxy": {
+        "context_path": "/post-jolt-spec-with-el",
+        "endpoints": [
+            {
+                "name": "default",
+                "target": "http://localhost:8080/team",
+                "http": {
+                    "connectTimeout": 3000,
+                    "readTimeout": 60000
+                }
+            }
+        ]
+    },
+    "flows": [
+        {
+            "name": "flow-1",
+            "methods": [],
+            "enabled": true,
+            "path-operator": {
+                "path": "/",
+                "operator": "STARTS_WITH"
+            },
+            "pre": [],
+            "post": [
+                {
+                    "name": "Json to Json",
+                    "description": "",
+                    "enabled": true,
+                    "policy": "json-to-json",
+                    "configuration": {
+                        "scope": "RESPONSE",
+                        "specification": "[{ \"operation\": \"default\", \"spec\": { \"my-prop\": \"{#properties['my-prop']}\"}}]"
+                    }
+                }
+            ]
+        }
+    ],
+    "resources": []
 }
