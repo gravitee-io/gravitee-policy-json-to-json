@@ -34,16 +34,16 @@
     </parent>
 
     <properties>
-        <gravitee-bom.version>5.0.0</gravitee-bom.version>
-        <gravitee-gateway-api.version>3.0.0-alpha.6</gravitee-gateway-api.version>
+        <gravitee-bom.version>6.0.3</gravitee-bom.version>
+        <gravitee-gateway-api.version>3.0.0</gravitee-gateway-api.version>
         <gravitee-policy-api.version>1.11.0</gravitee-policy-api.version>
         <gravitee-common.version>2.1.1</gravitee-common.version>
-        <gravitee-expression-language.version>2.2.0</gravitee-expression-language.version>
+        <gravitee-expression-language.version>3.0.0</gravitee-expression-language.version>
         <gravitee-apim.version>4.0.0-SNAPSHOT</gravitee-apim.version>
-        <gravitee-sse.version>3.1.0-alpha.3</gravitee-sse.version>
-        <gravitee-reactor-message.version>1.0.0-alpha.10</gravitee-reactor-message.version>
+        <gravitee-sse.version>4.0.0</gravitee-sse.version>
+        <gravitee-reactor-message.version>1.0.1</gravitee-reactor-message.version>
 
-        <jolt.version>0.1.1</jolt.version>
+        <jolt.version>0.1.8</jolt.version>
         <jsonassert.version>1.5.1</jsonassert.version>
 
         <maven-plugin-assembly.version>3.6.0</maven-plugin-assembly.version>
