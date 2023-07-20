@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/3.0.0...3.0.1) (2023-07-20)
+
+
+### Bug Fixes
+
+* update policy description ([9cefc00](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/9cefc00fc11d1f7a0f4ce5ec6fcb6b2a406fa081))
+
 # [3.0.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/2.2.0...3.0.0) (2023-07-18)
 
 
