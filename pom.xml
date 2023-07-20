@@ -25,7 +25,7 @@
     <version>3.0.0</version>
     <packaging>jar</packaging>
     <name>Gravitee.io APIM - Policy - JSON to JSON Transformation</name>
-    <description>Description of the JSON to JSON Transformation Gravitee Policy</description>
+    <description>Apply a transformation (or mapping) on the request and/or response and/or message content.</description>
 
     <parent>
         <groupId>io.gravitee</groupId>
