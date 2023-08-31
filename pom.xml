@@ -39,7 +39,7 @@
         <gravitee-policy-api.version>1.11.0</gravitee-policy-api.version>
         <gravitee-common.version>2.1.1</gravitee-common.version>
         <gravitee-expression-language.version>3.0.0</gravitee-expression-language.version>
-        <gravitee-apim.version>4.0.5</gravitee-apim.version>
+        <gravitee-apim.version>4.0.6</gravitee-apim.version>
         <gravitee-sse.version>4.0.0</gravitee-sse.version>
         <gravitee-reactor-message.version>1.0.1</gravitee-reactor-message.version>
 
