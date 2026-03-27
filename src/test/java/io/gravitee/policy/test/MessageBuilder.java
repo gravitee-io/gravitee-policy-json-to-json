@@ -49,9 +49,6 @@ public class MessageBuilder {
     }
 
     public Message build() {
-        var message = new DefaultMessage();
-        message.content(content);
-        message.headers(headers);
-        return message;
+        return DefaultMessage.builder().content(content).headers(headers).build();
     }
 }

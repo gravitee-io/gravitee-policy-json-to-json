@@ -1,0 +1,3 @@
+{
+    "specification": "[{\"operation\":\"shift\",\"spec\":{\"_id\":\"id\",\"*\":{\"$\":\"&1\"}}}]"
+}

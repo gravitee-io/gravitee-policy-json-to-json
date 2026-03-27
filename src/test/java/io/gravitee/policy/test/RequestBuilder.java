@@ -51,8 +51,11 @@ public class RequestBuilder {
     }
 
     public RequestBuilder messages(Message... messages) {
-        this.messages =
-            Flowable.concat(Arrays.stream(messages).map(m -> Maybe.fromCallable(() -> m).toFlowable()).collect(Collectors.toList()));
+        this.messages = Flowable.concat(
+            Arrays.stream(messages)
+                .map(m -> Maybe.fromCallable(() -> m).toFlowable())
+                .collect(Collectors.toList())
+        );
         return this;
     }
 

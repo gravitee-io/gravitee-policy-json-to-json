@@ -30,18 +30,17 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>22.5.1</version>
+        <version>24.0.0</version>
     </parent>
 
     <properties>
-        <gravitee-bom.version>6.0.62</gravitee-bom.version>
-        <gravitee-gateway-api.version>3.0.0</gravitee-gateway-api.version>
-        <gravitee-policy-api.version>1.11.0</gravitee-policy-api.version>
+        <gravitee-apim.version>4.10.9</gravitee-apim.version>
+        <gravitee-policy-api.version>1.19.0</gravitee-policy-api.version>
         <gravitee-common.version>2.1.1</gravitee-common.version>
-        <gravitee-expression-language.version>3.0.0</gravitee-expression-language.version>
-        <gravitee-apim.version>4.1.5</gravitee-apim.version>
+        <gravitee-expression-language.version>4.2.0</gravitee-expression-language.version>
         <gravitee-sse.version>4.0.0</gravitee-sse.version>
-        <gravitee-reactor-message.version>1.0.1</gravitee-reactor-message.version>
+        <gravitee-reactor-message.version>10.0.0</gravitee-reactor-message.version>
+        <gravitee-reactor-native-kafka.version>6.0.0</gravitee-reactor-native-kafka.version>
 
         <jolt.version>0.1.8</jolt.version>
         <jsonassert.version>1.5.1</jsonassert.version>
@@ -56,36 +55,11 @@
         <dependencies>
             <!-- Import bom to properly inherit all dependencies -->
             <dependency>
-                <groupId>io.gravitee</groupId>
-                <artifactId>gravitee-bom</artifactId>
-                <version>${gravitee-bom.version}</version>
+                <groupId>io.gravitee.apim</groupId>
+                <artifactId>gravitee-apim-bom</artifactId>
+                <version>${gravitee-apim.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.policy</groupId>
-                <artifactId>gravitee-policy-api</artifactId>
-                <version>${gravitee-policy-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.gateway</groupId>
-                <artifactId>gravitee-gateway-api</artifactId>
-                <version>${gravitee-gateway-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.el</groupId>
-                <artifactId>gravitee-expression-language</artifactId>
-                <version>${gravitee-expression-language.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.common</groupId>
-                <artifactId>gravitee-common</artifactId>
-                <version>${gravitee-common.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node</artifactId>
-                <version>${gravitee-node.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -97,6 +71,7 @@
             <artifactId>gravitee-gateway-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>io.gravitee.el</groupId>
             <artifactId>gravitee-expression-language</artifactId>
@@ -112,6 +87,12 @@
         <dependency>
             <groupId>io.gravitee.common</groupId>
             <artifactId>gravitee-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.el</groupId>
+            <artifactId>gravitee-expression-language</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -147,6 +128,12 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Test scope -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -180,6 +167,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.graviteesource.reactor</groupId>
+            <artifactId>gravitee-reactor-native-kafka</artifactId>
+            <version>${gravitee-reactor-native-kafka.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.gravitee.apim.plugin.endpoint</groupId>
             <artifactId>gravitee-apim-plugin-endpoint-mock</artifactId>
             <version>${gravitee-apim.version}</version>
@@ -194,6 +187,12 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+            <version>8.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
