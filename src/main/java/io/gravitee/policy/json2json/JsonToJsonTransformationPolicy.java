@@ -23,23 +23,29 @@ import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.HttpHeaderNames;
 import io.gravitee.gateway.api.http.HttpHeaders;
 import io.gravitee.gateway.reactive.api.ExecutionFailure;
-import io.gravitee.gateway.reactive.api.context.HttpExecutionContext;
-import io.gravitee.gateway.reactive.api.context.MessageExecutionContext;
+import io.gravitee.gateway.reactive.api.context.http.HttpMessageExecutionContext;
+import io.gravitee.gateway.reactive.api.context.http.HttpPlainExecutionContext;
+import io.gravitee.gateway.reactive.api.context.kafka.KafkaMessageExecutionContext;
 import io.gravitee.gateway.reactive.api.message.Message;
-import io.gravitee.gateway.reactive.api.policy.Policy;
+import io.gravitee.gateway.reactive.api.message.kafka.KafkaMessage;
+import io.gravitee.gateway.reactive.api.policy.http.HttpPolicy;
+import io.gravitee.gateway.reactive.api.policy.kafka.KafkaPolicy;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 import io.gravitee.policy.v3.json2json.JsonToJsonTransformationPolicyV3;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPolicyV3 implements Policy {
+public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPolicyV3 implements HttpPolicy, KafkaPolicy {
 
     private static final String INVALID_JSON_TRANSFORMATION = "JSON_INVALID_SPECIFICATION";
+    private static final Logger logger = LoggerFactory.getLogger(JsonToJsonTransformationPolicy.class);
 
     public JsonToJsonTransformationPolicy(final JsonToJsonTransformationPolicyConfiguration configuration) {
         super(configuration);
@@ -51,26 +57,36 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
     }
 
     @Override
-    public Completable onRequest(HttpExecutionContext ctx) {
+    public Completable onRequest(HttpPlainExecutionContext ctx) {
         return ctx.request().onBody(body -> transformBody(ctx, body, ctx.request().headers()));
     }
 
     @Override
-    public Completable onResponse(HttpExecutionContext ctx) {
+    public Completable onResponse(HttpPlainExecutionContext ctx) {
         return ctx.response().onBody(body -> transformBody(ctx, body, ctx.response().headers()));
     }
 
     @Override
-    public Completable onMessageRequest(MessageExecutionContext ctx) {
+    public Completable onMessageRequest(HttpMessageExecutionContext ctx) {
         return ctx.request().onMessage(message -> transformMessage(ctx, message));
     }
 
     @Override
-    public Completable onMessageResponse(MessageExecutionContext ctx) {
+    public Completable onMessageResponse(HttpMessageExecutionContext ctx) {
         return ctx.response().onMessage(message -> transformMessage(ctx, message));
     }
 
-    private Maybe<Buffer> transformBody(final HttpExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
+    @Override
+    public Completable onMessageRequest(KafkaMessageExecutionContext ctx) {
+        return ctx.request().onMessage(message -> transformMessage(ctx, message));
+    }
+
+    @Override
+    public Completable onMessageResponse(KafkaMessageExecutionContext ctx) {
+        return ctx.response().onMessage(message -> transformMessage(ctx, message));
+    }
+
+    private Maybe<Buffer> transformBody(final HttpPlainExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
         var jsonContentType = Optional.ofNullable(httpHeaders.get(HttpHeaderNames.CONTENT_TYPE)).map(v -> v.toLowerCase().contains("json"));
         if (jsonContentType.orElse(false)) {
             return applyJoltTransform(ctx.getTemplateEngine(), body, httpHeaders)
@@ -83,7 +99,7 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
         return body;
     }
 
-    private Maybe<Message> transformMessage(final MessageExecutionContext ctx, final Message message) {
+    private Maybe<Message> transformMessage(final HttpMessageExecutionContext ctx, final Message message) {
         return applyJoltTransform(ctx.getTemplateEngine(message), Maybe.fromCallable(message::content), message.headers())
             .map(message::content)
             .defaultIfEmpty(message)
@@ -92,6 +108,16 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
                 ctx.interruptMessageWith(
                     new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
                 )
+            );
+    }
+
+    private Maybe<KafkaMessage> transformMessage(final KafkaMessageExecutionContext ctx, final KafkaMessage message) {
+        return applyJoltTransform(ctx.getTemplateEngine(message), Maybe.fromCallable(message::content), message)
+            .map(buffer -> (KafkaMessage) message.content(buffer))
+            .defaultIfEmpty(message)
+            .toMaybe()
+            .onErrorResumeWith(
+                Maybe.fromCompletable(ctx.executionContext().interruptWith(org.apache.kafka.common.protocol.Errors.UNKNOWN_SERVER_ERROR))
             );
     }
 
@@ -123,6 +149,45 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
                 if (configuration.isOverrideContentType()) {
                     httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON);
                 }
-            });
+            })
+            .onErrorResumeNext(Maybe::error);
+    }
+
+    private Maybe<Buffer> applyJoltTransform(
+        final TemplateEngine templateEngine,
+        final Maybe<Buffer> bufferUpstream,
+        final KafkaMessage message
+    ) {
+        var nonEmptyBuffer = bufferUpstream.filter(b -> b.length() > 0);
+        var joltSpec = templateEngine
+            .eval(configuration.getSpecification(), String.class)
+            .map(specification -> Chainr.fromSpec(JsonUtils.jsonToList(specification)));
+
+        return Maybe
+            .zip(
+                joltSpec,
+                nonEmptyBuffer,
+                (chainr, buffer) -> {
+                    if (
+                        MediaType.APPLICATION_JSON.equals(
+                            message.recordHeaders().getOrDefault(HttpHeaderNames.CONTENT_TYPE, Buffer.buffer("")).toString()
+                        )
+                    ) {
+                        Object inputJSON = JsonUtils.jsonToObject(buffer.toString());
+                        Object transformedOutput = chainr.transform(inputJSON);
+                        return Buffer.buffer(JsonUtils.toJsonString(transformedOutput));
+                    } else {
+                        return buffer;
+                    }
+                }
+            )
+            .doOnSuccess(buffer -> {
+                message.putRecordHeader(HttpHeaderNames.CONTENT_LENGTH, Buffer.buffer(buffer.length()));
+
+                if (configuration.isOverrideContentType()) {
+                    message.putRecordHeader(HttpHeaderNames.CONTENT_TYPE, Buffer.buffer(MediaType.APPLICATION_JSON));
+                }
+            })
+            .onErrorResumeNext(Maybe::error);
     }
 }
