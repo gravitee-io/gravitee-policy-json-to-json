@@ -49,8 +49,7 @@ public class JsonToJsonTransformationPolicyV3 {
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response, PolicyChain chain, ExecutionContext executionContext) {
         if (configuration.getScope() == PolicyScope.RESPONSE) {
-            TransformableStreamBuilder builder = TransformableResponseStreamBuilder
-                .on(response)
+            TransformableStreamBuilder builder = TransformableResponseStreamBuilder.on(response)
                 .chain(chain)
                 .transform(map(executionContext));
 
@@ -67,8 +66,7 @@ public class JsonToJsonTransformationPolicyV3 {
     @OnRequestContent
     public ReadWriteStream onRequestContent(Request request, PolicyChain chain, ExecutionContext executionContext) {
         if (configuration.getScope() == PolicyScope.REQUEST) {
-            TransformableStreamBuilder builder = TransformableRequestStreamBuilder
-                .on(request)
+            TransformableStreamBuilder builder = TransformableRequestStreamBuilder.on(request)
                 .chain(chain)
                 .transform(map(executionContext));
 

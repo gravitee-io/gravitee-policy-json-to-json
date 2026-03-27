@@ -1,0 +1,43 @@
+rawExamples:
+    - title: Proxy API on Request phase
+      templateRef: v4-api-proxy
+      language: json
+      properties:
+          phase: request
+      file: .docgen/examples/request.json
+    - title: Proxy API on Response phase
+      templateRef: v4-api-proxy
+      language: json
+      properties:
+          phase: response
+      file: .docgen/examples/response.json
+    - title: Proxy API on Request phase - no override content
+      templateRef: v4-api-proxy
+      language: json
+      properties:
+          phase: request
+      file: .docgen/examples/request_override.json
+    - title: Message API CRD subscribe
+      templateRef: v4-api-crd-message
+      language: json
+      properties:
+          phase: subscribe
+      file: .docgen/examples/message_subscribe.json
+    - title: Message API CRD - no override content
+      templateRef: v4-api-crd-message
+      language: json
+      properties:
+          phase: publish
+      file: .docgen/examples/message_publish.json
+    - title: Natvie Kafka API CRD
+      templateRef: v4-api-crd-kafka-native
+      language: json
+      properties:
+          phase: subscribe
+      file: .docgen/examples/kafka_message_subscribe.json
+    - title: Message API CRD - no override content
+      templateRef: v4-api-crd-kafka-native
+      language: json
+      properties:
+          phase: publish
+      file: .docgen/examples/kafka_message_publish.json
