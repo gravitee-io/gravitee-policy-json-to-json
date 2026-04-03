@@ -1,0 +1,4 @@
+{
+    "specification": "[{\"operation\":\"shift\",\"spec\":{\"_id\":\"id\",\"*\":{\"$\":\"&1\"}}}]",
+    "overrideContentType": false
+}
