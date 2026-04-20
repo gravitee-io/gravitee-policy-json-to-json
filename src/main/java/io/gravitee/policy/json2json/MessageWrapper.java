@@ -15,10 +15,17 @@
  */
 package io.gravitee.policy.json2json;
 
-interface HeaderOperations {
+import io.gravitee.gateway.api.buffer.Buffer;
+import io.reactivex.rxjava3.core.Maybe;
+
+interface MessageWrapper<T> {
     boolean isJsonContentType();
 
-    void setContentLength(int length);
+    Maybe<Buffer> content();
 
-    void setContentType(String type);
+    T withContent(Buffer content);
+
+    Maybe<T> unchanged();
+
+    Maybe<T> emptyContent();
 }

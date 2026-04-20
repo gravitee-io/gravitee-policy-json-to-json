@@ -1,9 +1,9 @@
 # JSON to JSON transformation policy
 
-[![Available at Gravitee.io](https://github.com/gravitee-io/gravitee-policy-json-to-json)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/gravitee-io/gravitee-policy-webhook-signature-generator/blob/master/LICENSE.txt)
-[![Releases](https://img.shields.io/badge/semantic--release-conventional%20commits-e10079?logo=semantic-release)](https://github.com/gravitee-io/gravitee-policy-webhook-signature-generator/releases)
-[![CircleCI](https://circleci.com/gh/gravitee-io/webhook-logo.svg?style=svg)](https://circleci.com/gh/gravitee-io/gravitee-policy-webhook-signature-generator)
+[![Available at Gravitee.io](https://img.shields.io/static/v1?label=Available%20at&message=Gravitee.io&color=1EC9D2)](https://download.gravitee.io/#graviteeio-apim/plugins/policies/gravitee-policy-json-to-json/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/gravitee-io/gravitee-policy-json-to-json/blob/master/LICENSE.txt)
+[![Releases](https://img.shields.io/badge/semantic--release-conventional%20commits-e10079?logo=semantic-release)](https://github.com/gravitee-io/gravitee-policy-json-to-json/releases)
+[![CircleCI](https://circleci.com/gh/gravitee-io/gravitee-policy-json-to-json.svg?style=svg)](https://circleci.com/gh/gravitee-io/gravitee-policy-json-to-json)
 # Phases
 
 ### V3 engine
