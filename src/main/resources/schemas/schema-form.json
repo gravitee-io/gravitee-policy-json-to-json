@@ -9,7 +9,7 @@
             "type": "string",
             "default": "REQUEST",
             "enum": ["REQUEST", "RESPONSE"],
-            "deprecated": "true"
+            "deprecated": true
         },
         "overrideContentType": {
             "title": "Override the Content-Type",

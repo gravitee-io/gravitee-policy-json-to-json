@@ -17,27 +17,27 @@ package io.gravitee.policy.json2json;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
-import io.gravitee.common.http.MediaType;
 import io.gravitee.el.TemplateEngine;
 import io.gravitee.gateway.api.buffer.Buffer;
-import io.gravitee.gateway.api.http.HttpHeaderNames;
 import io.gravitee.gateway.api.http.HttpHeaders;
 import io.gravitee.gateway.reactive.api.ExecutionFailure;
-import io.gravitee.gateway.reactive.api.context.HttpExecutionContext;
-import io.gravitee.gateway.reactive.api.context.MessageExecutionContext;
+import io.gravitee.gateway.reactive.api.context.http.HttpMessageExecutionContext;
+import io.gravitee.gateway.reactive.api.context.http.HttpPlainExecutionContext;
+import io.gravitee.gateway.reactive.api.context.kafka.KafkaMessageExecutionContext;
 import io.gravitee.gateway.reactive.api.message.Message;
-import io.gravitee.gateway.reactive.api.policy.Policy;
+import io.gravitee.gateway.reactive.api.message.kafka.KafkaMessage;
+import io.gravitee.gateway.reactive.api.policy.http.HttpPolicy;
+import io.gravitee.gateway.reactive.api.policy.kafka.KafkaPolicy;
 import io.gravitee.policy.json2json.configuration.JsonToJsonTransformationPolicyConfiguration;
 import io.gravitee.policy.v3.json2json.JsonToJsonTransformationPolicyV3;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
-import java.util.Optional;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPolicyV3 implements Policy {
+public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPolicyV3 implements HttpPolicy, KafkaPolicy {
 
     private static final String INVALID_JSON_TRANSFORMATION = "JSON_INVALID_SPECIFICATION";
 
@@ -51,78 +51,83 @@ public class JsonToJsonTransformationPolicy extends JsonToJsonTransformationPoli
     }
 
     @Override
-    public Completable onRequest(HttpExecutionContext ctx) {
+    public Completable onRequest(HttpPlainExecutionContext ctx) {
         return ctx.request().onBody(body -> transformBody(ctx, body, ctx.request().headers()));
     }
 
     @Override
-    public Completable onResponse(HttpExecutionContext ctx) {
+    public Completable onResponse(HttpPlainExecutionContext ctx) {
         return ctx.response().onBody(body -> transformBody(ctx, body, ctx.response().headers()));
     }
 
     @Override
-    public Completable onMessageRequest(MessageExecutionContext ctx) {
+    public Completable onMessageRequest(HttpMessageExecutionContext ctx) {
         return ctx.request().onMessage(message -> transformMessage(ctx, message));
     }
 
     @Override
-    public Completable onMessageResponse(MessageExecutionContext ctx) {
+    public Completable onMessageResponse(HttpMessageExecutionContext ctx) {
         return ctx.response().onMessage(message -> transformMessage(ctx, message));
     }
 
-    private Maybe<Buffer> transformBody(final HttpExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
-        var jsonContentType = Optional.ofNullable(httpHeaders.get(HttpHeaderNames.CONTENT_TYPE)).map(v -> v.toLowerCase().contains("json"));
-        if (jsonContentType.orElse(false)) {
-            return applyJoltTransform(ctx.getTemplateEngine(), body, httpHeaders)
-                .onErrorResumeWith(
-                    ctx.interruptBodyWith(
-                        new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
-                    )
-                );
+    @Override
+    public Completable onMessageRequest(KafkaMessageExecutionContext ctx) {
+        return ctx.request().onMessage(message -> transformMessage(ctx, message));
+    }
+
+    @Override
+    public Completable onMessageResponse(KafkaMessageExecutionContext ctx) {
+        return ctx.response().onMessage(message -> transformMessage(ctx, message));
+    }
+
+    private Maybe<Buffer> transformBody(final HttpPlainExecutionContext ctx, final Maybe<Buffer> body, HttpHeaders httpHeaders) {
+        return applyJoltTransform(
+            ctx.getTemplateEngine(),
+            new HttpBodyWrapper(body, httpHeaders, configuration.isOverrideContentType())
+        ).onErrorResumeWith(
+            ctx.interruptBodyWith(
+                new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
+            )
+        );
+    }
+
+    private Maybe<Message> transformMessage(final HttpMessageExecutionContext ctx, final Message message) {
+        return applyJoltTransform(
+            ctx.getTemplateEngine(message),
+            new HttpMessageWrapper<>(message, configuration.isOverrideContentType())
+        ).onErrorResumeWith(
+            ctx.interruptMessageWith(
+                new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
+            )
+        );
+    }
+
+    private Maybe<KafkaMessage> transformMessage(final KafkaMessageExecutionContext ctx, final KafkaMessage message) {
+        return applyJoltTransform(
+            ctx.getTemplateEngine(message),
+            new KafkaMessageWrapper(message, configuration.isOverrideContentType())
+        ).onErrorResumeWith(
+            Maybe.fromCompletable(ctx.executionContext().interruptWith(org.apache.kafka.common.protocol.Errors.UNKNOWN_SERVER_ERROR))
+        );
+    }
+
+    private <T> Maybe<T> applyJoltTransform(final TemplateEngine templateEngine, final MessageWrapper<T> messageWrapper) {
+        if (!messageWrapper.isJsonContentType()) {
+            return messageWrapper.unchanged();
         }
-        return body;
-    }
 
-    private Maybe<Message> transformMessage(final MessageExecutionContext ctx, final Message message) {
-        return applyJoltTransform(ctx.getTemplateEngine(message), Maybe.fromCallable(message::content), message.headers())
-            .map(message::content)
-            .defaultIfEmpty(message)
-            .toMaybe()
-            .onErrorResumeWith(
-                ctx.interruptMessageWith(
-                    new ExecutionFailure(500).key(INVALID_JSON_TRANSFORMATION).message("Unable to apply JOLT transformation to payload")
-                )
-            );
-    }
-
-    private Maybe<Buffer> applyJoltTransform(
-        final TemplateEngine templateEngine,
-        final Maybe<Buffer> bufferUpstream,
-        final HttpHeaders httpHeaders
-    ) {
-        var nonEmptyBuffer = bufferUpstream.filter(b -> b.length() > 0);
-        var joltSpec = templateEngine
+        var nonEmptyBuffer = messageWrapper.content().filter(b -> b.length() > 0);
+        Maybe<Chainr> joltSpec = templateEngine
             .eval(configuration.getSpecification(), String.class)
             .map(specification -> Chainr.fromSpec(JsonUtils.jsonToList(specification)));
 
-        return Maybe
-            .zip(
-                joltSpec,
-                nonEmptyBuffer,
-                (
-                    (chainr, buffer) -> {
-                        Object inputJSON = JsonUtils.jsonToObject(buffer.toString());
-                        Object transformedOutput = chainr.transform(inputJSON);
-                        return Buffer.buffer(JsonUtils.toJsonString(transformedOutput));
-                    }
-                )
-            )
-            .doOnSuccess(buffer -> {
-                httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(buffer.length()));
-
-                if (configuration.isOverrideContentType()) {
-                    httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-                }
-            });
+        return Maybe.zip(joltSpec, nonEmptyBuffer, (chainr, buffer) -> {
+            Object inputJSON = JsonUtils.jsonToObject(buffer.toString());
+            Object transformedOutput = chainr.transform(inputJSON);
+            return Buffer.buffer(JsonUtils.toJsonString(transformedOutput));
+        })
+            .map(messageWrapper::withContent)
+            .switchIfEmpty(messageWrapper.emptyContent())
+            .onErrorResumeNext(Maybe::error);
     }
 }
