@@ -377,6 +377,13 @@ spec:
 
 ## Changelog
 
+### [3.1.0](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/3.0.1...3.1.0) (2026-05-06)
+
+
+##### Features
+
+* add kafka publish/subscribe phases support ([d1ac3bd](https://github.com/gravitee-io/gravitee-policy-json-to-json/commit/d1ac3bd394b785cde7eb8df8944dd43f1da65397))
+
 #### [3.0.1](https://github.com/gravitee-io/gravitee-policy-json-to-json/compare/3.0.0...3.0.1) (2023-07-20)
 
 
