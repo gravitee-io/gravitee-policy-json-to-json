@@ -35,17 +35,12 @@
 
     <properties>
         <gravitee-apim.version>4.10.9</gravitee-apim.version>
-        <gravitee-policy-api.version>1.19.0</gravitee-policy-api.version>
-        <gravitee-common.version>2.1.1</gravitee-common.version>
-        <gravitee-expression-language.version>4.2.0</gravitee-expression-language.version>
         <gravitee-sse.version>4.0.0</gravitee-sse.version>
         <gravitee-reactor-message.version>10.0.0</gravitee-reactor-message.version>
         <gravitee-reactor-native-kafka.version>6.0.0</gravitee-reactor-native-kafka.version>
 
         <jolt.version>0.1.8</jolt.version>
-        <jsonassert.version>1.5.1</jsonassert.version>
 
-        <maven-plugin-assembly.version>3.8.0</maven-plugin-assembly.version>
         <maven-plugin-properties.version>1.3.1</maven-plugin-properties.version>
 
         <publish-folder-path>graviteeio-apim/plugins/policies</publish-folder-path>
@@ -228,7 +223,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven-plugin-assembly.version}</version>
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
