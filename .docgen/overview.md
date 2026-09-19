@@ -35,14 +35,6 @@ policy checks the `Content-Type` header before applying any transformation.
 At message level, the policy will do nothing if the processed message has no content. It means that the message will be
 re-emitted as is.
 
-# Compatibility with APIM
-
-| Plugin version | APIM version  |
-|:--------------:|:-------------:|
-|      1.X       | Up to 3.19.x  |
-|      2.X       |    3.20.x     |
-|      3.X       | 4.x to latest |
-
 # Configuration
 
 You can configure the policy with the following options:
