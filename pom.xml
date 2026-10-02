@@ -35,7 +35,7 @@
 
     <properties>
         <gravitee-apim.version>4.10.9</gravitee-apim.version>
-        <gravitee-sse.version>4.1.0</gravitee-sse.version>
+        <gravitee-sse.version>6.0.0</gravitee-sse.version>
         <gravitee-reactor-message.version>10.0.1</gravitee-reactor-message.version>
         <gravitee-reactor-native-kafka.version>6.3.4</gravitee-reactor-native-kafka.version>
 
