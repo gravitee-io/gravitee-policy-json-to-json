@@ -85,12 +85,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>io.gravitee.el</groupId>
-            <artifactId>gravitee-expression-language</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Jackson dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
