@@ -181,7 +181,7 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-logging</artifactId>
-            <version>8.3.2</version>
+            <version>9.22.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
